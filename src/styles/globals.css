@@ -1,0 +1,33 @@
+@import "./theme.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  #waveform ::part(wrapper) {
+    @apply bg-surface rounded-md;
+  }
+
+  #waveform ::part(region) {
+    @apply bg-primary-surface;
+  }
+
+  #waveform ::part(region-handle-left) {
+    @apply border-l-[10px] border-primary rounded-l-md;
+  }
+
+  #waveform ::part(region-handle-right) {
+    @apply border-r-8 border-primary rounded-r-md;
+  }
+}
+
+@layer base {
+  * {
+    @apply box-border border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
