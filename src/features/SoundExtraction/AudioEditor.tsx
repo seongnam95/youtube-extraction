@@ -1,7 +1,9 @@
 import { useWavesurfer } from "@wavesurfer/react";
-import React, { useEffect, useMemo, useRef } from "react";
-import RegionsPlugin from "wavesurfer.js/dist/plugins/regions.esm.js";
-import Hover from "wavesurfer.js/dist/plugins/hover.esm.js";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import RegionsPlugin, {
+  Region,
+} from "wavesurfer.js/dist/plugins/regions.esm.js";
+import HoverPlugin from "wavesurfer.js/dist/plugins/hover.esm.js";
 
 interface AudioEditorProps {
   url?: string;
@@ -9,14 +11,20 @@ interface AudioEditorProps {
 
 const AudioEditor: React.FC<AudioEditorProps> = ({ url = "/test.mp3" }) => {
   const waveformRef = useRef<HTMLDivElement>(null);
+
+  const [regionDuration, setRegionDuration] = useState<{
+    start: number;
+    end: number;
+  }>({ start: 0, end: 0 });
+
+  // Initialize Wavesurfer
   const { wavesurfer, isPlaying, isReady } = useWavesurfer({
     container: waveformRef,
-    url: url,
-    waveColor: "purple",
-    height: 100,
+    autoCenter: true,
+    waveColor: "#333333",
     plugins: useMemo(
       () => [
-        Hover.create({
+        HoverPlugin.create({
           lineColor: "#e56cdf",
           lineWidth: 2,
           labelBackground: "#555",
@@ -28,34 +36,74 @@ const AudioEditor: React.FC<AudioEditorProps> = ({ url = "/test.mp3" }) => {
     ),
   });
 
+  // Load audio file
   useEffect(() => {
-    if (isReady && wavesurfer) {
-      const wsRegions = wavesurfer.registerPlugin(RegionsPlugin.create());
+    if (wavesurfer && url) wavesurfer.load(url);
+  }, [url, wavesurfer]);
 
-      if (wsRegions) {
-        wsRegions.addRegion({
-          start: 0,
-          end: wavesurfer.getDuration(),
-          color: "rgba(216, 216, 216, 0.5)",
-          drag: true,
-          resize: true,
+  // Add regions
+  useEffect(() => {
+    if (wavesurfer && isReady) {
+      const wsRegion = wavesurfer.registerPlugin(RegionsPlugin.create());
+
+      wsRegion.clearRegions();
+
+      wsRegion.on("region-created", (region: Region) => {
+        setRegionDuration({
+          start: region.start,
+          end: region.end,
         });
-      }
 
-      wsRegions.on("region-updated", (region) => {
-        console.log("Updated region", region);
+        /* Resize 방향에 따른 Seek 지점 변경 */
+        region.on("update", (direction) => {
+          wavesurfer.stop();
+
+          if (direction === "start") {
+            wavesurfer.setTime(region.start);
+          } else if (direction === "end") {
+            const endSeek =
+              region.end - 2 >= region.start ? region.end - 2 : region.start;
+            wavesurfer.setTime(endSeek);
+          }
+        });
+
+        /* Resize 종료 시 play */
+        region.on("update-end", () => wavesurfer.play());
+
+        wavesurfer.on("audioprocess", (time) => {
+          if (region && time >= region.end) {
+            wavesurfer.stop();
+            wavesurfer.setTime(region.start);
+          }
+        });
+      });
+
+      wsRegion.on("region-updated", (region: Region) => {
+        setRegionDuration({
+          start: region.start,
+          end: region.end,
+        });
+      });
+
+      wsRegion.addRegion({
+        start: 0,
+        end: wavesurfer.getDuration(),
+        color: "hsla(265, 100%, 86%, 0.4)",
       });
     }
   }, [wavesurfer, isReady]);
 
-  const onPlayPause = () => {
-    wavesurfer && wavesurfer.playPause();
+  const handlePlayPause = () => {
+    wavesurfer?.playPause();
   };
 
   return (
     <>
       <div ref={waveformRef} id="waveform" />
-      <button onClick={onPlayPause}>{isPlaying ? "Pause" : "Play"}</button>
+      <p>{Math.round(regionDuration.start)}</p>
+      <p>{Math.round(regionDuration.end)}</p>
+      {/* <p>{Math.round(region ? region.end : 0)}</p> */}
+      <button onClick={handlePlayPause}>{isPlaying ? "Pause" : "Play"}</button>
     </>
   );
 };
