@@ -1,24 +1,4 @@
 :root {
-  --background: #fff;
-  --surface: #f9f9fb;
-
-  --border: #eff0f3;
-  --border-accent: #cdced7;
-
-  --foreground: #374151;
-  --foreground-accent: #111827;
-  --foreground-muted: #484848b9;
-
-  --primary: #7146fc;
-  --primary-accent: #643ee1;
-  --primary-surface: #0000ff0f;
-  --primary-foreground: #fff;
-
-  --card: #fff;
-  --card-foreground: #1e1f24;
-}
-
-.dark {
   --background: #1a1a1b;
   --surface: #d6e2f916;
 
@@ -36,4 +16,7 @@
 
   --card: #19191b;
   --card-foreground: #eeeef0;
+
+  --region-bar: #b199fef3;
+  --region-surface: #d6e2f916;
 }

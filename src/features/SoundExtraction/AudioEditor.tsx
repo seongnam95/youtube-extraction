@@ -21,7 +21,11 @@ const AudioEditor: React.FC<AudioEditorProps> = ({ url = "/test.mp3" }) => {
   const { wavesurfer, isPlaying, isReady } = useWavesurfer({
     container: waveformRef,
     autoCenter: true,
-    waveColor: "#333333",
+    barWidth: 3,
+    barRadius: 5,
+    cursorColor: "#c0c0c0",
+    waveColor: "#6241E6",
+    progressColor: "#6241E6",
     plugins: useMemo(
       () => [
         HoverPlugin.create({
@@ -88,7 +92,6 @@ const AudioEditor: React.FC<AudioEditorProps> = ({ url = "/test.mp3" }) => {
       wsRegion.addRegion({
         start: 0,
         end: wavesurfer.getDuration(),
-        color: "hsla(265, 100%, 86%, 0.4)",
       });
     }
   }, [wavesurfer, isReady]);
@@ -99,7 +102,9 @@ const AudioEditor: React.FC<AudioEditorProps> = ({ url = "/test.mp3" }) => {
 
   return (
     <>
-      <div ref={waveformRef} id="waveform" />
+      <div id="waveform-background">
+        <div ref={waveformRef} id="waveform" />
+      </div>
       <p>{Math.round(regionDuration.start)}</p>
       <p>{Math.round(regionDuration.end)}</p>
       {/* <p>{Math.round(region ? region.end : 0)}</p> */}

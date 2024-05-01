@@ -44,25 +44,9 @@ const config: Config = {
         DEFAULT: "var(--card)",
         foreground: "var(--card-foreground)",
       },
-      blue: {
-        DEFAULT: "var(--blue)",
-        surface: "var(--blue)",
-        foreground: "var(--blue-foreground)",
-      },
-      green: {
-        DEFAULT: "var(--green)",
-        surface: "var(--green)",
-        foreground: "var(--green-foreground)",
-      },
-      yellow: {
-        DEFAULT: "var(--yellow)",
-        surface: "var(--yellow)",
-        foreground: "var(--yellow-foreground)",
-      },
-      red: {
-        DEFAULT: "var(--red)",
-        surface: "var(--red)",
-        foreground: "var(--red-foreground)",
+      region: {
+        surface: "var(--region-surface)",
+        bar: "var(--region-bar)",
       },
     },
     extend: {
