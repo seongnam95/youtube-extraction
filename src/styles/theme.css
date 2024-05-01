@@ -1,6 +1,6 @@
 :root {
-  --background: #1a1a1b;
-  --surface: #d6e2f916;
+  --background: #01071f;
+  --surface: #0d1329;
 
   --border: #2d2e30;
   --border-accent: #46484f;
@@ -9,7 +9,7 @@
   --foreground-accent: #ebebeb;
   --foreground-muted: #959595b9;
 
-  --primary: #b59eff;
+  --primary: #3bcdc2;
   --primary-accent: #bca5ff;
   --primary-surface: #8152fe37;
   --primary-foreground: #fff;

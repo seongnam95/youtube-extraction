@@ -1,33 +1,12 @@
-@import "./theme.css";
+@import './theme.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  /* body {
-    background-image: radial-gradient(at 27% 37%, #3a8bfd 0, transparent 50%),
-      radial-gradient(at 97% 21%, #9772fe 0, transparent 50%),
-      radial-gradient(at 52% 99%, #fd3a4e 0, transparent 50%),
-      radial-gradient(at 10% 29%, #5afc7d 0, transparent 50%),
-      radial-gradient(at 97% 96%, #e4c795 0, transparent 50%),
-      radial-gradient(at 33% 50%, #8ca8e8 0, transparent 50%),
-      radial-gradient(at 79% 53%, #eea5ba 0, transparent 50%);
-    filter: blur(100px) saturate(150%);
-  } */
-
-  #waveform-background {
-    background-image: radial-gradient(at 27% 37%, #3a8bfd 0, transparent 50%),
-      radial-gradient(at 97% 21%, #9772fe 0, transparent 50%),
-      radial-gradient(at 52% 99%, #fd3a4e 0, transparent 50%),
-      radial-gradient(at 10 % 29%, #5afc7d 0, transparent 50%),
-      radial-gradient(at 97% 96%, #e4c795 0, transparent 50%),
-      radial-gradient(at 33% 50%, #8ca8e8 0, transparent 50%),
-      radial-gradient(at 79% 53%, #eea5ba 0, transparent 50%);
-  }
-
   #waveform ::part(wrapper) {
-    @apply bg-surface rounded-md;
+    @apply rounded-md bg-transparent;
     backdrop-filter: blur(20px);
   }
 
@@ -36,19 +15,19 @@
   }
 
   #waveform ::part(region-handle) {
-    @apply border-region-bar border-[10px];
-
-    &::before {
-      @apply content-[''];
-    }
+    @apply border-region-bar;
   }
 
-  #waveform ::part(region-handle-left) {
-    @apply rounded-l-md;
+  #waveform ::part(cursor) {
+    @apply bg-foreground;
   }
 
-  #waveform ::part(region-handle-right) {
-    @apply rounded-r-md;
+  #waveform ::part(hover) {
+    @apply border-foreground-muted;
+  }
+
+  #waveform ::part(hover-label) {
+    @apply ml-1 rounded-md bg-surface px-2;
   }
 }
 
@@ -59,5 +38,15 @@
 
   body {
     @apply bg-background text-foreground;
+
+    /* ::before {
+      background-image: radial-gradient(at 27% 37%, #3a8bfd 0, transparent 50%),
+        radial-gradient(at 97% 21%, #9772fe 0, transparent 50%),
+        radial-gradient(at 52% 99%, #fd3a4e 0, transparent 50%),
+        radial-gradient(at 10% 29%, #5afc7d 0, transparent 50%),
+        radial-gradient(at 97% 96%, #e4c795 0, transparent 50%),
+        radial-gradient(at 33% 50%, #8ca8e8 0, transparent 50%),
+        radial-gradient(at 79% 53%, #eea5ba 0, transparent 50%);
+    } */
   }
 }

@@ -15,10 +15,13 @@ const iconButtonVariants = cva(
         default: 'h-8 w-8 text-sm',
         sm: 'h-7 w-7 text-sm',
         lg: 'h-9 w-9 text-lg',
+        xl: 'h-11 w-11 text-xl',
       },
       variant: {
-        default: 'border-transparent bg-primary text-primary-foreground hover:bg-primary-accent',
-        secondary: 'bg-secondary text-secondary-foreground border-transparent hover:bg-secondary-accent',
+        default:
+          'border-transparent bg-primary text-primary-foreground hover:bg-primary-accent',
+        secondary:
+          'bg-secondary text-secondary-foreground border-transparent hover:bg-secondary-accent',
         outline: 'border-border-accent hover:border-secondary-accent',
         dashed: 'border-border-accent border-dashed hover:border-secondary-accent',
         ghost: 'border-transparent hover:bg-surface',
