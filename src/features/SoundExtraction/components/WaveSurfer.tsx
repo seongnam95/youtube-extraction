@@ -24,13 +24,20 @@ const WaveSurfer = ({
   });
 
   const drawWaveform = () => {
-    if (!canvasRef.current || !audioBuffer) return;
+    if (!canvasRef.current || !boundaryRef.current || !audioBuffer) return;
     const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
 
     const totalWidth = canvasRef.current.width;
-    const leftBoundary = (areaSide.areaLeft / 100) * totalWidth;
-    const rightBoundary = ((100 - areaSide.areaRight) / 100) * totalWidth;
+
+    // const boundaryLeft = Number(boundaryRef.current.style.left.replace('%', ''));
+    // const boundaryRight = Number(boundaryRef.current.style.right.replace('%', ''));
+
+    // const boundaryStart = (boundaryLeft / 100) * totalWidth;
+    // const boundaryEnd = ((100 - boundaryRight) / 100) * totalWidth;
+
+    const boundaryStart = (areaSide.areaLeft / 100) * totalWidth;
+    const boundaryEnd = ((100 - areaSide.areaRight) / 100) * totalWidth;
 
     const data = audioBuffer.getChannelData(0);
     const step = Math.ceil(data.length / totalWidth);
@@ -47,7 +54,7 @@ const WaveSurfer = ({
       ctx.beginPath();
       ctx.moveTo(i, amp - max * amp);
       ctx.lineTo(i, amp + max * amp);
-      ctx.strokeStyle = i >= leftBoundary && i <= rightBoundary ? waveColor : 'gray';
+      ctx.strokeStyle = i >= boundaryStart && i <= boundaryEnd ? waveColor : 'gray';
       ctx.stroke();
     }
   };
