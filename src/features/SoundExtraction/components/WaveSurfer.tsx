@@ -1,68 +1,131 @@
 import React, { HTMLAttributes, useEffect, useRef, useState } from 'react';
 
+import { convertToTime } from '@/features/SoundExtraction/components/calculation';
 import { cn } from '@/lib/cn';
+
+type StartEnd = {
+  start: number;
+  end: number;
+};
 
 interface WaveSurferProps extends HTMLAttributes<HTMLDivElement> {
   url: string;
   waveColor?: string;
+  regionColor?: string;
+}
+
+interface WaveOptions {
+  barWidth?: number;
+  barGap?: number;
+  barRadius?: number;
+  waveColor: string;
+  regionWaveColor: string;
 }
 
 const WaveSurfer = ({
   className,
   url,
-  waveColor = '#3bcdc2',
+  waveColor = '#4dd37e',
+  regionColor = '#0d1329',
   ...props
 }: WaveSurferProps) => {
+  const initStartEnd = { start: 0, end: 0 };
+  const audioContext = new AudioContext();
+
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const boundaryRef = useRef<HTMLDivElement>(null);
+  const regionRef = useRef<HTMLDivElement>(null);
 
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
-  const [areaSide, setAreaSide] = useState<{ areaLeft: number; areaRight: number }>({
-    areaLeft: 0,
-    areaRight: 0,
-  });
+  const [region, setRegion] = useState<StartEnd>(initStartEnd);
+  const [regionDuration, setRegionDuration] = useState<StartEnd>(initStartEnd);
 
-  const drawWaveform = () => {
-    if (!canvasRef.current || !boundaryRef.current || !audioBuffer) return;
+  const WaveOptions: WaveOptions = {
+    barWidth: 2,
+    barGap: 3,
+    barRadius: 2,
+    waveColor: waveColor,
+    regionWaveColor: regionColor,
+  };
+
+  const convertWaveColor = (color: string = waveColor) => {
+    if (!Array.isArray(color)) return color || '';
+    if (color.length < 2) return color[0] || '';
+
+    const canvasElement = document.createElement('canvas');
+    const ctx = canvasElement.getContext('2d') as CanvasRenderingContext2D;
+    const gradientHeight = canvasElement.height * (window.devicePixelRatio || 1);
+    const gradient = ctx.createLinearGradient(0, 0, 0, gradientHeight);
+
+    const colorStopPercentage = 1 / (color.length - 1);
+    color.forEach((color, index) => {
+      const offset = index * colorStopPercentage;
+      gradient.addColorStop(offset, color);
+    });
+
+    return gradient;
+  };
+
+  const drawWaveform = (options: WaveOptions) => {
+    if (!canvasRef.current || !regionRef.current || !audioBuffer) return;
     const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
 
-    const totalWidth = canvasRef.current.width;
+    const channelData = audioBuffer.getChannelData(0);
+    const length = channelData.length;
 
-    // const boundaryLeft = Number(boundaryRef.current.style.left.replace('%', ''));
-    // const boundaryRight = Number(boundaryRef.current.style.right.replace('%', ''));
+    const { width, height } = ctx.canvas;
+    const halfHeight = height / 2;
+    const pixelRatio = window.devicePixelRatio || 1;
 
-    // const boundaryStart = (boundaryLeft / 100) * totalWidth;
-    // const boundaryEnd = ((100 - boundaryRight) / 100) * totalWidth;
+    const barWidth = options.barWidth ? options.barWidth * pixelRatio : 1;
+    const barGap = options.barGap ? options.barGap * pixelRatio : options.barWidth ? barWidth / 2 : 0;
+    const barRadius = options.barRadius || 0;
+    const barIndexScale = width / (barWidth + barGap) / length;
 
-    const boundaryStart = (areaSide.areaLeft / 100) * totalWidth;
-    const boundaryEnd = ((100 - areaSide.areaRight) / 100) * totalWidth;
+    const rectFn = barRadius && 'roundRect' in ctx ? 'roundRect' : 'rect';
 
-    const data = audioBuffer.getChannelData(0);
-    const step = Math.ceil(data.length / totalWidth);
-    const amp = canvasRef.current.height / 2;
+    // ctx.clearRect(0, 0, width, canvasRef.current.height);
 
-    ctx.clearRect(0, 0, totalWidth, canvasRef.current.height);
+    ctx.beginPath();
 
-    for (let i = 0; i < totalWidth; i++) {
-      let max = 0;
-      for (let j = 0; j < step; j++) {
-        max = Math.max(max, Math.abs(data[i * step + j]));
+    let prevX = 0;
+    let maxTop = 0;
+    let maxBottom = 0;
+    for (let i = 0; i <= length; i++) {
+      const x = Math.round(i * barIndexScale);
+
+      if (x > prevX) {
+        const topBarHeight = Math.round(maxTop * halfHeight);
+        const bottomBarHeight = Math.round(maxBottom * halfHeight);
+        const barHeight = topBarHeight + bottomBarHeight || 1;
+
+        let y = halfHeight - topBarHeight;
+
+        ctx[rectFn](prevX * (barWidth + barGap), y, barWidth, barHeight, barRadius);
+
+        prevX = x;
+        maxTop = 0;
+        maxBottom = 0;
       }
 
-      ctx.beginPath();
-      ctx.moveTo(i, amp - max * amp);
-      ctx.lineTo(i, amp + max * amp);
-      ctx.strokeStyle = i >= boundaryStart && i <= boundaryEnd ? waveColor : 'gray';
-      ctx.stroke();
+      const magnitudeTop = Math.abs(channelData[i] || 0);
+      const magnitudeBottom = Math.abs(channelData[i] || 0);
+      if (magnitudeTop > maxTop) maxTop = magnitudeTop;
+      if (magnitudeBottom > maxBottom) maxBottom = magnitudeBottom;
     }
+
+    ctx.fillStyle = convertWaveColor(); //options.waveColor;
+    ctx.fill();
+    ctx.closePath();
   };
 
-  const handleResizeArea = (side: 'left' | 'right') => (event: React.MouseEvent) => {
+  const handleResizeRegion = (side: 'left' | 'right') => (event: React.MouseEvent) => {
+    if (!audioBuffer) return;
+
     const startX = event.clientX;
-    const startLeft = areaSide.areaLeft;
-    const startRight = areaSide.areaRight;
+    const startLeft = region.start;
+    const startRight = region.end;
     const containerWidth = containerRef.current ? containerRef.current.offsetWidth : 0;
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
@@ -70,19 +133,19 @@ const WaveSurfer = ({
       const diffPercent = (diff / containerWidth) * 100;
 
       if (side === 'left') {
-        const newLeft = Math.max(0, startLeft + diffPercent);
-        if (newLeft < 100 - areaSide.areaRight) {
-          setAreaSide((prev) => ({
+        const updatedLeft = Math.max(0, startLeft + diffPercent);
+        if (updatedLeft < 100 - region.end) {
+          setRegion((prev) => ({
             ...prev,
-            areaLeft: newLeft,
+            start: updatedLeft,
           }));
         }
       } else {
-        const newRight = Math.max(0, startRight - diffPercent);
-        if (newRight < 100 - areaSide.areaLeft) {
-          setAreaSide((prev) => ({
+        const updatedRight = Math.max(0, startRight - diffPercent);
+        if (updatedRight < 100 - region.start) {
+          setRegion((prev) => ({
             ...prev,
-            areaRight: newRight,
+            end: updatedRight,
           }));
         }
       }
@@ -109,7 +172,7 @@ const WaveSurfer = ({
       canvas.style.width = `${container.offsetWidth}px`;
       canvas.style.height = `${container.offsetHeight}px`;
 
-      drawWaveform();
+      drawWaveform(WaveOptions);
     });
 
     containerObserver.observe(container);
@@ -120,8 +183,6 @@ const WaveSurfer = ({
   }, [audioBuffer]);
 
   useEffect(() => {
-    const audioContext = new AudioContext();
-
     fetch(url).then((response) => {
       response.arrayBuffer().then((arrayBuffer) => {
         audioContext.decodeAudioData(arrayBuffer).then((decodedBuffer) => {
@@ -136,36 +197,72 @@ const WaveSurfer = ({
   }, [url]);
 
   useEffect(() => {
-    drawWaveform();
-  }, [areaSide.areaLeft, areaSide.areaRight, audioBuffer]);
+    if (audioBuffer) {
+      setRegionDuration({
+        start: audioBuffer?.duration * (region.start / 100),
+        end: audioBuffer.duration - audioBuffer.duration * (region.end / 100),
+      });
+    }
 
+    // drawWaveform(WaveOptions);
+  }, [region.start, region.end, audioBuffer]);
+
+  if (!audioBuffer) return;
   return (
-    <div className="bg-surface px-3">
-      <div
-        className={cn('relative inline-block h-32 w-full', className)}
-        ref={containerRef}
-        {...props}
-      >
-        <canvas ref={canvasRef} />
+    <div>
+      {/* Waveform */}
+      <div className="mb-16 rounded-md px-3">
+        <div className="relative h-32 w-full bg-surface" ref={containerRef}>
+          {/* Mask */}
+          <div
+            className="absolute bottom-0 left-0 top-0 bg-background opacity-80"
+            style={{ width: `${region.start}%` }}
+          />
+          <div
+            className="absolute bottom-0 right-0 top-0 bg-background opacity-80"
+            style={{ width: `${region.end}%` }}
+          />
 
-        <div
-          ref={boundaryRef}
-          className="absolute top-0 h-full bg-primary-surface"
-          style={{
-            left: `${areaSide.areaLeft}%`,
-            right: `${areaSide.areaRight}%`,
-          }}
-        >
+          {/* Region */}
           <div
-            onMouseDown={handleResizeArea('left')}
-            className="absolute -left-3 h-full w-3 cursor-w-resize rounded-l-md border-l-[12px] border-primary"
-          />
-          <div
-            onMouseDown={handleResizeArea('right')}
-            className="absolute -right-3 h-full w-3 cursor-e-resize rounded-r-md border-r-[12px] border-primary"
-          />
+            ref={regionRef}
+            className="absolute top-0 h-full"
+            style={{
+              left: `${region.start}%`,
+              right: `${region.end}%`,
+            }}
+          >
+            {/* Left Handle */}
+            <div
+              onMouseDown={handleResizeRegion('left')}
+              className="absolute -left-3 h-full w-3 cursor-w-resize"
+            >
+              <div
+                data-content={convertToTime(regionDuration.start)}
+                className="relative h-full w-3 rounded-l-md border-l-[12px] border-primary 
+                after:absolute after:-bottom-6 after:left-1/2 after:z-10 after:-translate-x-[60%] 
+                after:text-xs after:text-foreground-muted after:content-[attr(data-content)]"
+              />
+            </div>
+
+            {/* Right Handle */}
+            <div
+              onMouseDown={handleResizeRegion('right')}
+              className="absolute -right-3 h-full w-3 cursor-e-resize"
+            >
+              <div
+                data-content={convertToTime(regionDuration.end)}
+                className="relative h-full w-3 rounded-r-md border-l-[12px] border-primary after:absolute after:-bottom-6 after:left-1/2 after:z-10 after:-translate-x-[70%] after:text-xs after:text-foreground-muted after:content-[attr(data-content)]"
+              />
+            </div>
+          </div>
+
+          <canvas ref={canvasRef} />
         </div>
       </div>
+
+      {/* Media Controller */}
+      <div>d</div>
     </div>
   );
 };

@@ -1,10 +1,10 @@
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
-import SoundExtraction from "@/features/SoundExtraction";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
+import SoundExtraction from '@/features/SoundExtraction';
 
 function App() {
   return (
-    <div className="w-dvw h-dvh mt-24 px-5">
-      <Tabs className="max-w-[900px] mx-auto" defaultValue="sound">
+    <div className="mt-24 h-dvh w-dvw px-8">
+      <Tabs className="mx-auto max-w-[700px]" defaultValue="sound">
         <TabsList className="">
           <TabsTrigger value="sound">Sound</TabsTrigger>
           <TabsTrigger value="sound2">Video</TabsTrigger>

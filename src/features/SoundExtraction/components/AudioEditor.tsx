@@ -46,8 +46,7 @@ const AudioEditor: React.FC<AudioEditorProps> = ({ url = '/test.mp3' }) => {
           if (direction === 'start') {
             wavesurfer.setTime(region.start);
           } else if (direction === 'end') {
-            const endSeek =
-              region.end - 2 >= region.start ? region.end - 2 : region.start;
+            const endSeek = region.end - 2 >= region.start ? region.end - 2 : region.start;
             wavesurfer.setTime(endSeek);
           }
         });
@@ -84,11 +83,7 @@ const AudioEditor: React.FC<AudioEditorProps> = ({ url = '/test.mp3' }) => {
       <Flex justify="between" className="px-2">
         {/* Play/Pause Button */}
         <IconButton circle variant="outline" size="xl" onClick={handlePlayPause}>
-          {isPlaying ? (
-            <Pause className="w-5 fill-white" />
-          ) : (
-            <Play className="ml-3pxr w-5 fill-white" />
-          )}
+          {isPlaying ? <Pause className="w-5 fill-white" /> : <Play className="ml-3pxr w-5 fill-white" />}
         </IconButton>
 
         <Button>저장하기</Button>
