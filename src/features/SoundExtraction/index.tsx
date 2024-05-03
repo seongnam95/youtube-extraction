@@ -4,12 +4,10 @@ import { Button } from '@/components/ui/Button';
 import { Flex } from '@/components/ui/Flex';
 import { Heading } from '@/components/ui/Heading';
 import { Input } from '@/components/ui/Input';
-import AudioEditor from '@/features/SoundExtraction/components/AudioEditor';
-import WaveSurfer from '@/features/SoundExtraction/components/WaveSurfer';
+import { Region, WaveSurferRoot, Waveform } from '@/features/SoundExtraction/components/WaveSurfer';
 
 const SoundExtraction = () => {
   const [inputValue, setInputValue] = useState('');
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const handleAddLink = () => {
     if (!isValidYoutubeUrl(inputValue)) {
@@ -34,7 +32,12 @@ const SoundExtraction = () => {
         <Button onClick={handleAddLink}>추가</Button>
       </Flex>
       {/* <AudioEditor /> */}
-      <WaveSurfer url="/test.mp3" />
+      {/* <WaveSurfer url="/test.mp3" /> */}
+
+      <WaveSurferRoot audioUrl="/test.mp3">
+        <Waveform />
+        <Region />
+      </WaveSurferRoot>
     </div>
   );
 };
