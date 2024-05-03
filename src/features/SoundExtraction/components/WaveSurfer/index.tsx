@@ -1,5 +1,8 @@
 import React, { HTMLAttributes, useEffect, useRef, useState } from 'react';
 
+import PauseIcon from '@/assets/svg/pause.svg?react';
+import PlayIcon from '@/assets/svg/play.svg?react';
+import { IconButton } from '@/components/ui/IconButton';
 import { convertToTime } from '@/features/SoundExtraction/components/calculation';
 import { cn } from '@/lib/cn';
 
@@ -22,13 +25,7 @@ interface WaveOptions {
   regionWaveColor: string;
 }
 
-const WaveSurfer = ({
-  className,
-  url,
-  waveColor = '#4dd37e',
-  regionColor = '#0d1329',
-  ...props
-}: WaveSurferProps) => {
+const WaveSurfer = ({ url, waveColor = '#4dd37e', regionColor = '#0d1329' }: WaveSurferProps) => {
   const initStartEnd = { start: 0, end: 0 };
   const audioContext = new AudioContext();
 
@@ -37,6 +34,7 @@ const WaveSurfer = ({
   const regionRef = useRef<HTMLDivElement>(null);
 
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [region, setRegion] = useState<StartEnd>(initStartEnd);
   const [regionDuration, setRegionDuration] = useState<StartEnd>(initStartEnd);
 
@@ -46,24 +44,6 @@ const WaveSurfer = ({
     barRadius: 2,
     waveColor: waveColor,
     regionWaveColor: regionColor,
-  };
-
-  const convertWaveColor = (color: string = waveColor) => {
-    if (!Array.isArray(color)) return color || '';
-    if (color.length < 2) return color[0] || '';
-
-    const canvasElement = document.createElement('canvas');
-    const ctx = canvasElement.getContext('2d') as CanvasRenderingContext2D;
-    const gradientHeight = canvasElement.height * (window.devicePixelRatio || 1);
-    const gradient = ctx.createLinearGradient(0, 0, 0, gradientHeight);
-
-    const colorStopPercentage = 1 / (color.length - 1);
-    color.forEach((color, index) => {
-      const offset = index * colorStopPercentage;
-      gradient.addColorStop(offset, color);
-    });
-
-    return gradient;
   };
 
   const drawWaveform = (options: WaveOptions) => {
@@ -115,7 +95,7 @@ const WaveSurfer = ({
       if (magnitudeBottom > maxBottom) maxBottom = magnitudeBottom;
     }
 
-    ctx.fillStyle = convertWaveColor(); //options.waveColor;
+    ctx.fillStyle = options.waveColor;
     ctx.fill();
     ctx.closePath();
   };
@@ -159,6 +139,8 @@ const WaveSurfer = ({
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
   };
+
+  const handlePlayToggle = () => setIsPlaying((prev) => !prev);
 
   useEffect(() => {
     if (!canvasRef.current || !containerRef.current) return;
@@ -257,12 +239,22 @@ const WaveSurfer = ({
             </div>
           </div>
 
+          {/* Progress Bar */}
+          <div className="absolute h-full w-[1px] bg-white opacity-70" />
           <canvas ref={canvasRef} />
         </div>
       </div>
 
       {/* Media Controller */}
-      <div>d</div>
+      <div>
+        <IconButton circle size="xl" variant="outline" onClick={handlePlayToggle}>
+          {isPlaying ? (
+            <PauseIcon width="22px" height="22px" className="fill-foreground" />
+          ) : (
+            <PlayIcon width="24px" height="24px" className="ml-1 fill-foreground" />
+          )}
+        </IconButton>
+      </div>
     </div>
   );
 };
