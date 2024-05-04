@@ -34,10 +34,7 @@ const SoundExtraction = () => {
       {/* <AudioEditor /> */}
       {/* <WaveSurfer url="/test.mp3" /> */}
 
-      <WaveSurferRoot audioUrl="/test.mp3">
-        <Waveform />
-        <Region />
-      </WaveSurferRoot>
+      <Waveform audioUrl="/test.mp3" />
     </div>
   );
 };

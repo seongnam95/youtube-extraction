@@ -3,26 +3,21 @@ import { useContext, useState } from 'react';
 import { WaveSurferContext } from '@/features/SoundExtraction/components/WaveSurfer/WaveSurferRoot';
 import { convertToTime } from '@/features/SoundExtraction/components/WaveSurfer/calculation';
 
-interface RegionData {
-  start: number;
-  end: number;
-  width: number;
-}
+import { type RegionData } from './WaveSurferRoot';
 
 interface RegionProps {
   onChange?: (data: RegionData) => void;
 }
 
 export const Region = ({ onChange }: RegionProps) => {
-  const { containerRef } = useContext(WaveSurferContext);
-
+  const { canvasRef } = useContext(WaveSurferContext);
   const [region, setRegion] = useState<{ start: number; end: number }>({ start: 0, end: 0 });
 
   const handleThumbChange = (side: 'left' | 'right') => (event: React.MouseEvent) => {
     const startX = event.clientX;
     const startLeft = region.start;
     const startRight = region.end;
-    const containerWidth = containerRef.current ? containerRef.current.offsetWidth : 0;
+    const containerWidth = canvasRef.current ? canvasRef.current.offsetWidth : 0;
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const diff = moveEvent.clientX - startX;
