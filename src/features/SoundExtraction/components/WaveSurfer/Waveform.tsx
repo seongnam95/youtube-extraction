@@ -1,4 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+
+import Wave from 'wavesurfer.js';
 
 import { convertToTime } from '@/features/SoundExtraction/components/WaveSurfer/calculation';
 import { cn } from '@/lib/cn';
@@ -33,13 +35,11 @@ export const Waveform = ({ className, audioUrl, options = {} }: WaveSurferProps)
   const waveColor = options.waveColor || '#4dd37e';
 
   const getProgressX = () => {
-    if (!canvasRef.current || !audioBuffer) return 0;
-    const { width } = canvasRef.current;
-    const duration = audioBuffer.duration;
-    return (progress / duration) * width;
+    if (!audioBuffer) return 0;
+    return (progress / audioBuffer.duration) * 100;
   };
 
-  const drawWaveform = () => {
+  const draw = () => {
     if (!canvasRef.current || !audioBuffer) return;
     const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
@@ -54,8 +54,7 @@ export const Waveform = ({ className, audioUrl, options = {} }: WaveSurferProps)
 
     const rectFn = barRadius && 'roundRect' in ctx ? 'roundRect' : 'rect';
 
-    ctx.clearRect(0, 0, width, canvasRef.current.height);
-
+    ctx.clearRect(0, 0, width, height);
     ctx.beginPath();
     ctx.fillStyle = waveColor;
 
@@ -164,7 +163,7 @@ export const Waveform = ({ className, audioUrl, options = {} }: WaveSurferProps)
       canvas.style.width = `${container.offsetWidth}px`;
       canvas.style.height = `${container.offsetHeight}px`;
 
-      drawWaveform();
+      draw();
     });
 
     containerObserver.observe(container);
@@ -181,7 +180,7 @@ export const Waveform = ({ className, audioUrl, options = {} }: WaveSurferProps)
     setDuration({ start: 0, end: duration });
   }, [audioBuffer]);
 
-  useEffect(() => console.log(duration), [duration.start, duration.end]);
+  useEffect(() => draw(), [duration.start, duration.end]);
 
   if (!audioBuffer) return;
   return (

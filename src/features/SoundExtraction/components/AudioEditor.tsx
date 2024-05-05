@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useWavesurfer } from '@wavesurfer/react';
-import HoverPlugin from 'wavesurfer.js/dist/plugins/hover.esm.js';
 import RegionsPlugin, { Region } from 'wavesurfer.js/dist/plugins/regions.esm.js';
 
 import Pause from '@/assets/svg/pause.svg?react';
@@ -15,14 +14,14 @@ interface AudioEditorProps {
 }
 
 const AudioEditor: React.FC<AudioEditorProps> = ({ url = '/test.mp3' }) => {
-  const waveformRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Initialize Wavesurfer
   const { wavesurfer, isPlaying, isReady } = useWavesurfer({
-    container: waveformRef,
+    container: containerRef,
     autoCenter: true,
-    barHeight: 2,
-
+    barWidth: 2,
+    barRadius: 3,
     progressColor: '#4dd37e',
     waveColor: '#4dd37e',
   });
@@ -79,7 +78,7 @@ const AudioEditor: React.FC<AudioEditorProps> = ({ url = '/test.mp3' }) => {
   return (
     <div>
       <div id="waveform-background" className="mb-8">
-        <div ref={waveformRef} id="waveform" />
+        <div ref={containerRef} id="waveform" />
       </div>
 
       {/* Tools */}
