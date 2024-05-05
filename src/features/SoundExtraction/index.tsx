@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Flex } from '@/components/ui/Flex';
 import { Heading } from '@/components/ui/Heading';
 import { Input } from '@/components/ui/Input';
+import AudioEditor from '@/features/SoundExtraction/components/AudioEditor';
 import { Region, WaveSurferRoot, Waveform } from '@/features/SoundExtraction/components/WaveSurfer';
 
 const SoundExtraction = () => {

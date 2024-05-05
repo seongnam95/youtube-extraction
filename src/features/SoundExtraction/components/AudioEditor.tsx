@@ -22,9 +22,12 @@ const AudioEditor: React.FC<AudioEditorProps> = ({ url = '/test.mp3' }) => {
     container: waveformRef,
     autoCenter: true,
     barHeight: 2,
-    waveColor: '#3bcdc2',
-    plugins: useMemo(() => [HoverPlugin.create()], []),
+
+    progressColor: '#4dd37e',
+    waveColor: '#4dd37e',
   });
+
+  useEffect(() => console.log(wavesurfer?.getDuration()), [wavesurfer]);
 
   // Load audio file
   useEffect(() => {

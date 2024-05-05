@@ -1,8 +1,7 @@
-import { useContext, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
+import { convertToTime } from '@/features/SoundExtraction/components/WaveSurfer/calculation';
 import { cn } from '@/lib/cn';
-
-import { WaveSurferContext } from './WaveSurferRoot';
 
 interface WaveSurferProps {
   className?: string;
@@ -24,13 +23,21 @@ export const Waveform = ({ className, audioUrl, options = {} }: WaveSurferProps)
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
 
-  const [region, setRegion] = useState<{ start: number; end: number }>({ start: 0, end: 0 });
+  const [duration, setDuration] = useState<{ start: number; end: number }>({ start: 0, end: 0 });
+  const [progress, setProgress] = useState<number>(0);
 
   const pixelRatio = window.devicePixelRatio || 1;
   const barWidth = options.barWidth ? options.barWidth * pixelRatio : 1;
   const barGap = options.barGap ? options.barGap * pixelRatio : options.barWidth ? barWidth / 2 : 0;
   const barRadius = options.barRadius || 0;
   const waveColor = options.waveColor || '#4dd37e';
+
+  const getProgressX = () => {
+    if (!canvasRef.current || !audioBuffer) return 0;
+    const { width } = canvasRef.current;
+    const duration = audioBuffer.duration;
+    return (progress / duration) * width;
+  };
 
   const drawWaveform = () => {
     if (!canvasRef.current || !audioBuffer) return;
@@ -82,30 +89,39 @@ export const Waveform = ({ className, audioUrl, options = {} }: WaveSurferProps)
     ctx.closePath();
   };
 
+  const getThumbPosition = (duration: number) => {
+    if (!canvasRef.current || !audioBuffer) return 0;
+    return (duration / audioBuffer.duration) * 100;
+  };
+
   const handleThumbChange = (side: 'left' | 'right') => (event: React.MouseEvent) => {
-    const startX = event.clientX;
-    const startLeft = region.start;
-    const startRight = region.end;
-    const containerWidth = canvasRef.current ? canvasRef.current.offsetWidth : 0;
+    if (!canvasRef.current || !audioBuffer) return;
+
+    const canvasWidth = canvasRef.current.offsetWidth;
+    const fullDuration = audioBuffer.duration;
+
+    const x = event.clientX;
+    const startDuration = duration.start;
+    const endDuration = duration.end;
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      const diff = moveEvent.clientX - startX;
-      const diffPercent = (diff / containerWidth) * 100;
+      const diff = moveEvent.clientX - x;
+      const diffDuration = (diff / canvasWidth) * fullDuration;
 
       if (side === 'left') {
-        const updatedLeft = Math.max(0, startLeft + diffPercent);
-        if (updatedLeft < 100 - region.end) {
-          setRegion((prev) => ({
+        const updatedStart = Math.max(0, startDuration + diffDuration);
+        if (updatedStart < fullDuration - endDuration) {
+          setDuration((prev) => ({
             ...prev,
-            start: updatedLeft,
+            start: updatedStart,
           }));
         }
       } else {
-        const updatedRight = Math.max(0, startRight - diffPercent);
-        if (updatedRight < 100 - region.start) {
-          setRegion((prev) => ({
+        const updatedEnd = Math.max(0, endDuration + diffDuration);
+        if (updatedEnd < fullDuration - startDuration) {
+          setDuration((prev) => ({
             ...prev,
-            end: updatedRight,
+            end: updatedEnd,
           }));
         }
       }
@@ -156,28 +172,36 @@ export const Waveform = ({ className, audioUrl, options = {} }: WaveSurferProps)
     return () => {
       containerObserver.disconnect();
     };
-  }, [containerRef.current, canvasRef.current, audioBuffer]);
+  }, [containerRef.current, canvasRef.current]);
+
+  useEffect(() => {
+    if (!audioBuffer) return;
+
+    const duration = audioBuffer.duration;
+    setDuration({ start: 0, end: duration });
+  }, [audioBuffer]);
+
+  useEffect(() => console.log(duration), [duration.start, duration.end]);
 
   if (!audioBuffer) return;
   return (
     <div className="relative mx-3">
       <div className={cn('relative h-32 w-full bg-surface', className)} ref={containerRef}>
         {/* Progress Bar */}
-        <div className="absolute h-full w-[1px] bg-white opacity-70" />
+        <div className="absolute h-full w-[1px] bg-white opacity-70" style={{ left: `${getProgressX}%` }} />
 
         {/* Waveform Canvas*/}
         <canvas ref={canvasRef} />
-      </div>
 
-      <div className="absolute top-0 h-full w-full">
+        {/* Region */}
         <div
-          className="relative left-0 z-10 h-full bg-[rgba(1,7,31,0.8)]"
-          style={{ width: `${region.start}%` }}
+          className="absolute left-0 top-0 z-10 h-full bg-[rgba(1,7,31,0.8)]"
+          style={{ width: `${getThumbPosition(duration.start)}%` }}
         >
           {/* Left Thumb */}
           <div
             onMouseDown={handleThumbChange('left')}
-            data-content="20:10.1" //{convertToTime(regionDuration.start)}
+            data-content={convertToTime(duration.start)}
             className="absolute right-0 h-full w-3 cursor-ew-resize rounded-l-md border-l-[12px] border-primary
                 after:absolute after:-bottom-6 after:left-1/2 after:z-10 after:-translate-x-[60%] 
                 after:text-xs after:text-foreground-muted after:content-[attr(data-content)]"
@@ -185,13 +209,13 @@ export const Waveform = ({ className, audioUrl, options = {} }: WaveSurferProps)
         </div>
 
         <div
-          className="absolute right-0 top-0 h-full w-3 bg-[rgba(1,7,31,0.8)]"
-          style={{ width: `${region.end}%` }}
+          className="absolute right-0 top-0 h-full bg-[rgba(1,7,31,0.8)]"
+          style={{ left: `${getThumbPosition(duration.end)}%` }}
         >
           {/* Right Thumb */}
           <div
             onMouseDown={handleThumbChange('right')}
-            data-content="10:10.0" //{convertToTime(regionDuration.end)}
+            data-content={convertToTime(duration.end)}
             className="absolute h-full w-3 cursor-ew-resize rounded-r-md border-l-[12px] border-primary after:absolute after:-bottom-6 after:left-1/2 after:z-10 after:-translate-x-[70%] after:text-xs after:text-foreground-muted after:content-[attr(data-content)]"
           />
         </div>
