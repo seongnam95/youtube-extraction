@@ -1,12 +1,17 @@
 interface drawOptions {
   width: number;
   height: number;
+
   barWidth?: number;
   barGap?: number;
   waveColor?: string;
 }
 
-export const draw = (ctx: CanvasRenderingContext2D, channelData: Float32Array, options: drawOptions) => {
+export const draw = async (
+  ctx: CanvasRenderingContext2D,
+  channelData: Float32Array,
+  options: drawOptions,
+) => {
   const { width, height } = options;
 
   const pixelRatio = window.devicePixelRatio || 1;
@@ -28,6 +33,7 @@ export const draw = (ctx: CanvasRenderingContext2D, channelData: Float32Array, o
   let maxBottom = 0;
   for (let i = 0; i <= length; i++) {
     const x = Math.round(i * barIndexScale);
+
     if (x > prevX) {
       const topBarHeight = Math.round(maxTop * halfHeight);
       const bottomBarHeight = Math.round(maxBottom * halfHeight);

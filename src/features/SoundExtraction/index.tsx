@@ -1,29 +1,19 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/Button';
 import { Flex } from '@/components/ui/Flex';
 import { Heading } from '@/components/ui/Heading';
 import { Input } from '@/components/ui/Input';
-import AudioEditor from '@/features/SoundExtraction/components/AudioEditor';
-import { useTest } from '@/features/SoundExtraction/components/test';
-import useAudioWave from '@/features/SoundExtraction/components/useWaveform';
+import AudioWave from '@/features/SoundExtraction/components/AudioWave';
 
 const SoundExtraction = () => {
   const [inputValue, setInputValue] = useState('');
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const { WaveformComponent, onLoad } = useAudioWave();
-
-  useEffect(() => {
-    onLoad('/test.mp3');
-  }, []);
 
   const handleAddLink = () => {
     if (!isValidYoutubeUrl(inputValue)) {
       alert('유효한 유튜브 URL이 아닙니다.');
       return;
     }
-
     setInputValue('');
   };
 
@@ -41,14 +31,7 @@ const SoundExtraction = () => {
         <Button onClick={handleAddLink}>추가</Button>
       </Flex>
 
-      {/* <AudioEditor /> */}
-      {/* <WaveSurfer url="/test.mp3" /> */}
-
-      {/* <Waveform audioUrl="/test.mp3" /> */}
-
-      {/* <div ref={containerRef} /> */}
-      <WaveformComponent />
-      {/* <div ref={containerRef} /> */}
+      <AudioWave audioUrl="/test.mp3" />
     </div>
   );
 };
