@@ -24,49 +24,46 @@ export function useAudioWave({ container, audioUrl }: useAudioWaveParams) {
     event.stopPropagation();
 
     const canvasWidth = container.current.offsetWidth;
+
     const startX = event.clientX;
     const startBeginTime = beginTime;
     const startEndTime = endTime;
 
-    let frameId: number; // requestAnimationFrame을 위한 변수
-
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      cancelAnimationFrame(frameId); // 이전 프레임 취소
+      event.preventDefault();
+      event.stopPropagation();
 
-      frameId = requestAnimationFrame(() => {
-        moveEvent.preventDefault();
-        moveEvent.stopPropagation();
+      const diff = moveEvent.clientX - startX;
+      const diffDuration = (diff / canvasWidth) * duration;
 
-        const diff = moveEvent.clientX - startX;
-        const diffDuration = (diff / canvasWidth) * duration;
-
-        let newBeginTime = startBeginTime;
-        let newEndTime = startEndTime;
-
-        if (pos === 'left') {
-          newBeginTime = Math.max(0, startBeginTime + diffDuration);
-          if (newBeginTime <= duration - endTime) {
-            setBeginTime(newBeginTime);
-          }
-        } else {
-          newEndTime = Math.min(duration, startEndTime + diffDuration);
-          if (newEndTime >= beginTime) {
-            setEndTime(newEndTime);
-          }
+      if (pos === 'left') {
+        const newBeginTime = Math.max(0, startBeginTime + diffDuration);
+        if (newBeginTime <= startEndTime) {
+          setBeginTime(newBeginTime);
         }
+      } else {
+        const newEndTime = Math.min(duration, startEndTime + diffDuration);
+        if (newEndTime >= beginTime) {
+          setEndTime(newEndTime);
+        }
+      }
+    };
 
-        drawWave();
-      });
+    const handleMouseLeave = (e: MouseEvent) => {
+      if (!e.relatedTarget || e.relatedTarget === document.documentElement) {
+        unsubscribeDocument();
+      }
     };
 
     const unsubscribeDocument = () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', unsubscribeDocument);
-      cancelAnimationFrame(frameId); // 프레임 취소 추가
+      document.removeEventListener('mouseleave', handleMouseLeave);
     };
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', unsubscribeDocument);
+    document.addEventListener('mouseleave', handleMouseLeave);
   };
 
   const drawWave = async () => {
