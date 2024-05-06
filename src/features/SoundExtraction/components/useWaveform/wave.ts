@@ -15,6 +15,7 @@ class Waveform {
   private audioContext: AudioContext;
   private audioBuffer: AudioBuffer | null = null;
   private duration: { start: number; end: number } = { start: 0, end: 0 };
+  private resizeObserver: ResizeObserver | null = null;
 
   constructor(options: WaveformOptions) {
     this.audioContext = new AudioContext();
@@ -24,6 +25,8 @@ class Waveform {
     const canvas = this.createCanvas();
     this.canvas = canvas;
     this.container.appendChild(canvas);
+
+    this.initEvents();
   }
 
   public static create(options: WaveformOptions) {
@@ -51,6 +54,7 @@ class Waveform {
       .then((decodedBuffer) => {
         this.audioBuffer = decodedBuffer;
         this.duration.end = decodedBuffer.duration;
+
         this.draw();
       })
       .catch((error) => console.error('Error loading audio: ', error));
@@ -76,6 +80,27 @@ class Waveform {
     canvas.style.height = `${height}px`;
 
     return canvas;
+  }
+
+  private handleMouseDown(pos: 'left' | 'right') {
+    return (event: MouseEvent) => {
+      console.log(event.clientX);
+    };
+  }
+
+  private initEvents(): void {
+    this.resizeObserver = new ResizeObserver(() => {
+      if (!this.canvas) return;
+
+      this.canvas.width = this.container.offsetWidth * 2;
+      this.canvas.height = this.container.offsetHeight * 2;
+      this.canvas.style.width = `${this.container.offsetWidth}px`;
+      this.canvas.style.height = `${this.container.offsetHeight}px`;
+
+      this.draw();
+    });
+
+    this.resizeObserver.observe(this.container);
   }
 
   public draw(): void {

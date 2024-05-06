@@ -10,12 +10,13 @@ import useAudioWave from '@/features/SoundExtraction/components/useWaveform';
 
 const SoundExtraction = () => {
   const [inputValue, setInputValue] = useState('');
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const { audioWave, WaveformComponent } = useAudioWave();
+  const { WaveformComponent, onLoad } = useAudioWave();
 
   useEffect(() => {
-    if (audioWave.current) audioWave.current.load('./test.mp3');
-  }, [audioWave]);
+    onLoad('/test.mp3');
+  }, []);
 
   const handleAddLink = () => {
     if (!isValidYoutubeUrl(inputValue)) {
@@ -47,6 +48,7 @@ const SoundExtraction = () => {
 
       {/* <div ref={containerRef} /> */}
       <WaveformComponent />
+      {/* <div ref={containerRef} /> */}
     </div>
   );
 };

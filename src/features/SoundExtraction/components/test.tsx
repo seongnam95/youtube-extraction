@@ -1,26 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-
-type OmitContainer = Omit<TestClassOptions, 'container'>;
-interface useTestOptions extends OmitContainer {}
-
-export const useTest = (options?: useTestOptions) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const [audioWave, setAudioWave] = useState<TestClass>();
-  const combinedOptions = useMemo(() => Object.entries({ ...options }).flat(), [options]);
-
-  useEffect(() => {
-    if (!containerRef?.current) return;
-
-    const instance = TestClass.create({ ...options, container: containerRef.current });
-
-    return () => instance.destroy();
-  }, [containerRef, ...combinedOptions]);
-
-  const TestComponent = () => <div ref={containerRef} id="container" />;
-
-  return { TestComponent };
-};
+import { RefObject, useEffect, useRef, useState } from 'react';
 
 interface TestClassOptions {
   container: HTMLDivElement;
@@ -31,7 +9,7 @@ interface TestClassOptions {
 
 class TestClass {
   private container: HTMLDivElement;
-  private child: HTMLDivElement;
+  private child: HTMLDivElement | null = null;
   private bgColor: string;
   private width: number;
   private height: number;
@@ -42,25 +20,52 @@ class TestClass {
     this.width = options.width || 100;
     this.height = options.height || 100;
 
-    const child = this.createChildDiv();
-    this.child = child;
+    this.createChildDiv();
   }
 
   destroy() {
-    this.child.remove();
+    if (this.child) {
+      this.child.remove();
+    }
   }
 
-  public static create(options: TestClassOptions) {
-    return new TestClass(options);
-  }
-
-  private createChildDiv(): HTMLDivElement {
+  private createChildDiv() {
     const child = document.createElement('div');
     child.style.width = `${this.width}px`;
     child.style.height = `${this.height}px`;
     child.style.backgroundColor = this.bgColor;
 
     this.container.appendChild(child);
-    return child;
+    this.child = child;
   }
+}
+
+type OmitContainer = Omit<TestClassOptions, 'container'>;
+interface UseTestOptions extends OmitContainer {
+  container: RefObject<HTMLDivElement> | null;
+}
+
+export function useTest({ container, ...options }: UseTestOptions) {
+  const isInitilizing$ = useRef<boolean>(false);
+
+  const [testInstance, setTestInstance] = useState<TestClass | null>(null);
+
+  useEffect(() => {
+    if (!container?.current) return;
+
+    const prevContainer = container;
+
+    if (isInitilizing$.current) return;
+    isInitilizing$.current = true;
+
+    const instance = new TestClass({ ...options, container: container.current });
+    setTestInstance(instance);
+
+    return () => {
+      if (prevContainer === container) return;
+      instance.destroy();
+    };
+  }, [options]);
+
+  return { testInstance };
 }

@@ -1,25 +1,19 @@
-import { RefObject } from 'react';
-
 interface drawOptions {
-  ctx: CanvasRenderingContext2D;
-  channelData: Float32Array;
-  canvasRef: RefObject<HTMLCanvasElement>;
+  width: number;
+  height: number;
   barWidth?: number;
   barGap?: number;
   waveColor?: string;
 }
 
-export const draw = (options: drawOptions) => {
-  const { ctx, canvasRef, channelData } = options;
-  if (!canvasRef.current) return;
+export const draw = (ctx: CanvasRenderingContext2D, channelData: Float32Array, options: drawOptions) => {
+  const { width, height } = options;
 
   const pixelRatio = window.devicePixelRatio || 1;
   const barWidth = options.barWidth ? options.barWidth * pixelRatio : 1;
   const barGap = options.barGap ? options.barGap * pixelRatio : barWidth / 2;
   const waveColor = options.waveColor || '#4dd37e';
 
-  const width = canvasRef.current.offsetWidth;
-  const height = canvasRef.current.offsetHeight;
   const length = channelData.length;
 
   const halfHeight = height / 2;
