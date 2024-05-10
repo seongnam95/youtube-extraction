@@ -1355,7 +1355,7 @@ function le(t, n, e) {
     m,
     u,
     h,
-    f = ge(e, l * 2);
+    f = createTypedArray(e, l * 2);
   for (i = 0; i < l; i++)
     (o = i * n),
       (a = (i + 1) * n > s ? s : (i + 1) * n),
@@ -1367,41 +1367,44 @@ function le(t, n, e) {
       (f[i * 2 + 1] = m);
   return f;
 }
-function ge(t, n) {
-  return new (new Function(`return Int${t}Array`)())(n);
+function createTypedArray(bits, length) {
+  return new (new Function(`return Int${bits}Array`)())(length);
 }
-function Nt(t, n) {
-  var e = t.length,
-    i = 1 / e,
-    s = t[0].length / 2,
+function averagePeaks(channels, bit) {
+  var numChannels = channels.length,
+    i = 1 / numChannels,
+    numPeaksPerChannel = channels[0].length / 2,
     l = 0,
-    o = 0,
-    a,
-    d,
-    m = ge(n, s * 2);
-  for (o = 0; o < s; o++) {
-    for (a = 0, d = 0, l = 0; l < e; l++) (a += i * t[l][o * 2]), (d += i * t[l][o * 2 + 1]);
-    (m[o * 2] = a), (m[o * 2 + 1] = d);
+    averagePeaks = createTypedArray(bit, numPeaksPerChannel * 2);
+
+  for (let peakIndex = 0; peakIndex < numPeaksPerChannel; peakIndex++) {
+    let averageMin = 0,
+      averageMax = 0;
+
+    for (averageMin = 0, averageMax = 0, l = 0; l < numChannels; l++)
+      (averageMin += i * channels[l][peakIndex * 2]), (averageMax += i * channels[l][peakIndex * 2 + 1]);
+    (averagePeaks[peakIndex * 2] = averageMin), (averagePeaks[peakIndex * 2 + 1] = averageMax);
   }
-  return [m];
+  return [averagePeaks];
 }
 function A(t, n) {
   return typeof t == 'number' ? t : n;
 }
-var Ot = function (t, n, e, i, s, l) {
+var Ot = function (audioBuffer, n, e, i, s, l) {
     if (((n = A(n, 1e3)), (l = A(l, 16)), e == null && (e = !0), [8, 16, 32].indexOf(l) < 0))
       throw new Error('Invalid number of bits specified for peaks.');
-    var o = t.numberOfChannels,
+    var o = audioBuffer.numberOfChannels,
       a = [],
       d,
       m,
       u,
       h;
-    if (((i = A(i, 0)), (s = A(s, t.length)), typeof t.subarray > 'u'))
-      for (d = 0; d < o; d++) (u = t.getChannelData(d)), (h = u.subarray(i, s)), a.push(le(h, n, l));
-    else a.push(le(t.subarray(i, s), n, l));
+    if (((i = A(i, 0)), (s = A(s, audioBuffer.length)), typeof audioBuffer.subarray > 'u'))
+      for (d = 0; d < o; d++)
+        (u = audioBuffer.getChannelData(d)), (h = u.subarray(i, s)), a.push(le(h, n, l));
+    else a.push(le(audioBuffer.subarray(i, s), n, l));
     return (
-      e && a.length > 1 && (a = Nt(a, l)),
+      e && a.length > 1 && (a = averagePeaks(a, l)),
       (m = a[0].length / 2),
       {
         length: m,
