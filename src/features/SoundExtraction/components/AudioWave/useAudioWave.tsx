@@ -60,13 +60,46 @@ export function useAudioWave({ container, slider, audioBuffer }: useAudioWavePar
     [audioBuffer],
   );
 
+  const handleHover = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      if (!container.current || !duration.full) return;
+
+      const hoverLine = document.getElementById('hover-line');
+      if (!hoverLine) return;
+
+      const containerRect = container.current.getBoundingClientRect();
+      const containerWidth = containerRect.width;
+
+      // 이벤트의 X 위치를 슬라이더 상대 위치로 계산
+      const positionX = event.clientX - containerRect.left;
+
+      // duration의 시작과 끝 위치를 계산
+      const startPosition = (duration.begin / duration.full) * containerWidth;
+      const endPosition = (duration.end / duration.full) * containerWidth;
+
+      // 위치가 duration.begin과 duration.end 사이에 있는지 확인
+      if (positionX >= startPosition && positionX <= endPosition) {
+        hoverLine.style.opacity = '1';
+        hoverLine.style.left = `${(positionX / containerWidth) * 100}%`;
+      } else {
+        hoverLine.style.opacity = '0';
+      }
+    },
+    [container, duration],
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    const hoverLine = document.getElementById('hover-line');
+    if (hoverLine) hoverLine.style.opacity = '0';
+  }, []);
+
   /* 슬라이더 리사이즈 */
   const resizeSlider = (pos: 'left' | 'right') => (event: React.MouseEvent) => {
-    if (!container.current) return;
+    if (!canvas.current) return;
     event.preventDefault();
     event.stopPropagation();
 
-    const canvasWidth = container.current.offsetWidth;
+    const canvasWidth = canvas.current.offsetWidth;
     const startX = event.clientX;
     let frameId: number;
 
@@ -156,6 +189,7 @@ export function useAudioWave({ container, slider, audioBuffer }: useAudioWavePar
   /* 슬라이더 시간 변경 */
   useEffect(() => {
     if (!slider.current || !duration) return;
+
     const startRatio = (duration.begin / duration.full) * 100;
     const endRatio = (duration.end / duration.full) * 100 - startRatio;
 
@@ -167,6 +201,8 @@ export function useAudioWave({ container, slider, audioBuffer }: useAudioWavePar
 
   return {
     resizeSlider,
+    handleHover,
+    handleMouseLeave,
     duration,
   };
 }
