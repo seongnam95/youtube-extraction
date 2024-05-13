@@ -1,24 +1,18 @@
 import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 
+import { Duration } from '@/features/SoundExtraction/components/AudioWave';
+
 import { draw } from './draw';
 
 interface useAudioWaveParams {
   container: RefObject<HTMLElement>;
-  slider: RefObject<HTMLElement>;
+  canvas: RefObject<HTMLCanvasElement>;
   audioBuffer: AudioBuffer | null;
+  duration: Duration;
 }
 
-export interface Duration {
-  full: number;
-  begin: number;
-  end: number;
-}
-
-export function useAudioWave({ container, slider, audioBuffer }: useAudioWaveParams) {
-  const canvas = useRef<HTMLCanvasElement>();
-
+export function useAudioWave({ container, canvas, audioBuffer, duration }: useAudioWaveParams) {
   const [peaks, setPeaks] = useState<Array<Float32Array | number[]>>();
-  const [duration, setDuration] = useState<Duration>({ full: 0, begin: 0, end: 0 });
 
   /* 웨이브 그리기 */
   const drawWave = () => {
@@ -93,61 +87,6 @@ export function useAudioWave({ container, slider, audioBuffer }: useAudioWavePar
     if (hoverLine) hoverLine.style.opacity = '0';
   }, []);
 
-  /* 슬라이더 리사이즈 */
-  const resizeSlider = (pos: 'left' | 'right') => (event: React.MouseEvent) => {
-    if (!canvas.current) return;
-    event.preventDefault();
-    event.stopPropagation();
-
-    const canvasWidth = canvas.current.offsetWidth;
-    const startX = event.clientX;
-    let frameId: number;
-
-    const updateDuration = (newBeginTime: number, newEndTime: number) => {
-      if (pos === 'left' && newBeginTime <= duration.end) {
-        setDuration((prev) => ({ ...prev, begin: newBeginTime }));
-      } else if (pos === 'right' && newEndTime >= duration.begin) {
-        setDuration((prev) => ({ ...prev, end: newEndTime }));
-      }
-    };
-
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      cancelAnimationFrame(frameId);
-      frameId = requestAnimationFrame(() => {
-        const diff = moveEvent.clientX - startX;
-        const diffDuration = (diff / canvasWidth) * duration.full;
-
-        const newBeginTime = pos === 'left' ? Math.max(0, duration.begin + diffDuration) : duration.begin;
-        const newEndTime =
-          pos === 'right' ? Math.min(duration.full, duration.end + diffDuration) : duration.end;
-
-        updateDuration(newBeginTime, newEndTime);
-      });
-    };
-
-    const cleanup = () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', cleanup);
-      document.removeEventListener('mouseleave', cleanup);
-      cancelAnimationFrame(frameId);
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', cleanup);
-    document.addEventListener('mouseleave', cleanup);
-  };
-
-  /* 캔버스 생성 */
-  const createCanvas = () => {
-    if (!container.current) return;
-
-    const canvasEl = document.createElement('canvas');
-    canvas.current = canvasEl;
-    container.current.appendChild(canvasEl);
-
-    resizeCanvas();
-  };
-
   /* 캔버스 리사이즈 */
   const resizeCanvas = useCallback(() => {
     if (!container.current || !canvas.current) return;
@@ -161,22 +100,14 @@ export function useAudioWave({ container, slider, audioBuffer }: useAudioWavePar
     canvas.current.style.height = `${offsetHeight}px`;
 
     drawWave();
-  }, [duration]);
+  }, [container, canvas]);
 
-  /* 초기 세팅 */
+  /* 피크 추출 */
   useEffect(() => {
-    if (!container.current || canvas.current || !audioBuffer) return;
-    const peaks = exportPeaks();
-    const duration = audioBuffer.duration;
-
-    setPeaks(peaks);
-    setDuration((prev) => ({
-      ...prev,
-      full: duration,
-      end: duration,
-    }));
-
-    createCanvas();
+    if (audioBuffer) {
+      const peaks = exportPeaks();
+      setPeaks(peaks);
+    }
   }, [audioBuffer]);
 
   /* 윈도우 리사이즈 */
@@ -186,21 +117,9 @@ export function useAudioWave({ container, slider, audioBuffer }: useAudioWavePar
     return () => resizeObserver.disconnect();
   }, [resizeCanvas]);
 
-  /* 슬라이더 시간 변경 */
-  useEffect(() => {
-    if (!slider.current || !duration) return;
-
-    const startRatio = (duration.begin / duration.full) * 100;
-    const endRatio = (duration.end / duration.full) * 100 - startRatio;
-
-    slider.current.style.left = `${startRatio}%`;
-    slider.current.style.width = `${endRatio}%`;
-
-    drawWave();
-  }, [duration]);
+  useEffect(() => drawWave(), [peaks, duration.begin, duration.end]);
 
   return {
-    resizeSlider,
     handleHover,
     handleMouseLeave,
     duration,

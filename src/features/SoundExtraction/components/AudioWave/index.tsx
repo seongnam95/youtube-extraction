@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { convertToTime } from '@/features/SoundExtraction/components/AudioWave/calculation';
-import { useAudioContext } from '@/features/SoundExtraction/components/AudioWave/context';
+import Slider from '@/features/SoundExtraction/components/AudioWave/components/Slider';
 import { useAudioPlayer } from '@/features/SoundExtraction/components/AudioWave/useAudioPlayer';
 import useAudioWave from '@/features/SoundExtraction/components/AudioWave/useAudioWave';
 
@@ -18,25 +18,34 @@ interface AudioWaveOptions {
   barRadius?: number;
 }
 
+export interface Duration {
+  full: number;
+  begin: number;
+  end: number;
+}
+
 const AudioWave = ({ className, audioUrl }: AudioWaveProps) => {
   const audioContextRef = useRef<AudioContext | null>(null);
   if (!audioContextRef.current) audioContextRef.current = new AudioContext();
   const audioContext = audioContextRef.current;
 
   const container = useRef<HTMLDivElement>(null);
-  const slider = useRef<HTMLDivElement>(null);
+  const canvas = useRef<HTMLCanvasElement>(null);
 
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
+  const [duration, setDuration] = useState<Duration>({ full: 0, begin: 0, end: 0 });
 
-  const { play } = useAudioPlayer({
-    audioContext,
-    audioBuffer,
+  const { handleHover, handleMouseLeave } = useAudioWave({
+    container: container,
+    canvas: canvas,
+    audioBuffer: audioBuffer,
+    duration: duration,
   });
 
-  const { duration, resizeSlider, handleHover, handleMouseLeave } = useAudioWave({
-    container: container,
-    slider: slider,
-    audioBuffer: audioBuffer,
+  const { toggle, isPlaying, currentTime } = useAudioPlayer({
+    audioContext,
+    audioBuffer,
+    duration,
   });
 
   useEffect(() => {
@@ -45,6 +54,11 @@ const AudioWave = ({ className, audioUrl }: AudioWaveProps) => {
         response.arrayBuffer().then((arrayBuffer) => {
           audioContext.decodeAudioData(arrayBuffer).then((decodedBuffer) => {
             setAudioBuffer(decodedBuffer);
+            setDuration((prev) => ({
+              ...prev,
+              full: decodedBuffer.duration,
+              end: decodedBuffer.duration,
+            }));
           });
         });
       });
@@ -61,43 +75,23 @@ const AudioWave = ({ className, audioUrl }: AudioWaveProps) => {
           onMouseLeave={handleMouseLeave}
         >
           {/* Slider */}
-          <div ref={slider} className="absolute top-0 h-full">
-            {/* Left Handle */}
-            <div className="absolute -left-[12px] h-full w-3" onMouseDown={resizeSlider('left')}>
-              <div
-                data-content={convertToTime(duration.begin)}
-                className="absolute h-full w-full bg-primary before:absolute before:-bottom-6 before:left-1/2 before:z-10 before:h-[20px] before:-translate-x-1/2 before:select-none before:text-xs before:text-foreground-muted before:content-[attr(data-content)]"
-              />
-            </div>
-            {/* Hover able */}
-            <div id="hoverable" className="absolute h-full w-full" />
-
-            {/* Right Handle */}
-            <div className="absolute -right-[12px] h-full w-3" onMouseDown={resizeSlider('right')}>
-              <div
-                data-content={convertToTime(duration.end)}
-                className="absolute h-full w-full bg-primary before:absolute before:-bottom-6 before:left-1/2 before:z-10 before:h-[20px] before:-translate-x-1/2 before:select-none before:text-xs before:text-foreground-muted before:content-[attr(data-content)]"
-              />
-            </div>
-
-            {/* Duration */}
-            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 select-none text-xs">
-              {convertToTime(duration.end - duration.begin)}
-            </div>
-          </div>
+          <Slider duration={duration} onChange={setDuration} />
 
           {/* Hover Line */}
           <div
             id="hover-line"
             className="absolute left-10 h-full w-[1px] bg-foreground opacity-0 transition-opacity duration-100"
           />
+
           {/* Progress Line */}
-          <div id="progress-line" className="absolute" />
+          <div id="progress-line" className="absolute h-full w-[1px] bg-foreground" />
+          <canvas ref={canvas} />
         </div>
       </div>
 
-      <button className="mt-10" onClick={play}>
-        플레이
+      <p>{convertToTime(currentTime)}</p>
+      <button className="mt-10" onClick={toggle}>
+        {isPlaying ? 'Pause' : 'Play'}
       </button>
     </div>
   );
