@@ -1,4 +1,4 @@
-import { Duration } from '@/features/SoundExtraction/components/AudioWave/useAudioWave';
+import { type Duration } from './type';
 
 function hexToRGB(hex: string) {
   let r = 0,

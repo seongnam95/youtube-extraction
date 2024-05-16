@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { convertToTime } from '@/features/SoundExtraction/components/AudioWave/calculation';
-import Slider from '@/features/SoundExtraction/components/AudioWave/components/Slider';
-import { useAudioPlayer } from '@/features/SoundExtraction/components/AudioWave/useAudioPlayer';
-import useAudioWave from '@/features/SoundExtraction/components/AudioWave/useAudioWave';
+import { cn } from '@/lib/cn';
+
+import { convertToTime } from './calculation';
+import Slider from './components/Slider';
+import { useAudioPlayer } from './hooks/useAudioPlayer';
+import useAudioWave from './hooks/useAudioWave';
+import { type AudioWaveOptions, type Duration } from './type';
 
 interface AudioWaveProps {
   className?: string;
@@ -11,42 +14,36 @@ interface AudioWaveProps {
   options?: AudioWaveOptions;
 }
 
-interface AudioWaveOptions {
-  waveColor?: string;
-  barWidth?: number;
-  barGap?: number;
-  barRadius?: number;
-}
-
-export interface Duration {
-  full: number;
-  begin: number;
-  end: number;
-}
-
 const AudioWave = ({ className, audioUrl }: AudioWaveProps) => {
   const audioContextRef = useRef<AudioContext | null>(null);
   if (!audioContextRef.current) audioContextRef.current = new AudioContext();
   const audioContext = audioContextRef.current;
 
-  const container = useRef<HTMLDivElement>(null);
-  const canvas = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
   const [duration, setDuration] = useState<Duration>({ full: 0, begin: 0, end: 0 });
 
   const { handleHover, handleMouseLeave } = useAudioWave({
-    container: container,
-    canvas: canvas,
-    audioBuffer: audioBuffer,
-    duration: duration,
+    containerRef,
+    canvasRef,
+    audioBuffer,
+    duration,
   });
 
-  const { toggle, isPlaying, currentTime } = useAudioPlayer({
+  const { play, pause, stop, audioState, currentTime, startedAt, setStartedAt } = useAudioPlayer({
     audioContext,
     audioBuffer,
     duration,
   });
+
+  const handleChangeSlider = (updatedDuration: Duration, handle: 'begin' | 'end') => {
+    setDuration(updatedDuration);
+
+    if (handle === 'end') setStartedAt(updatedDuration.end - 1);
+    else if (handle === 'begin') setStartedAt(updatedDuration.begin);
+  };
 
   useEffect(() => {
     if (audioUrl && !audioBuffer) {
@@ -67,15 +64,15 @@ const AudioWave = ({ className, audioUrl }: AudioWaveProps) => {
 
   return (
     <div className={className}>
-      <div id="scroll-wrap">
+      <div id="scroll-wrap" className="mb-8">
         <div
-          ref={container}
+          ref={containerRef}
           className="relative block h-full w-full"
           onMouseMove={handleHover}
           onMouseLeave={handleMouseLeave}
         >
           {/* Slider */}
-          <Slider duration={duration} onChange={setDuration} />
+          <Slider containerRef={containerRef} duration={duration} onChange={handleChangeSlider} />
 
           {/* Hover Line */}
           <div
@@ -84,14 +81,34 @@ const AudioWave = ({ className, audioUrl }: AudioWaveProps) => {
           />
 
           {/* Progress Line */}
-          <div id="progress-line" className="absolute h-full w-[1px] bg-foreground" />
-          <canvas ref={canvas} />
+          <div
+            id="progress-line"
+            className={cn(
+              'absolute h-full w-[1px] bg-foreground',
+              startedAt === duration.begin && 'opacity-0',
+              audioState !== 'stopped' && 'opacity-100',
+            )}
+            style={{
+              left: `${(currentTime / duration.full) * 100}%`,
+            }}
+          />
+
+          {/* Canvas */}
+          <canvas ref={canvasRef} />
         </div>
       </div>
 
+      {audioState}
+
       <p>{convertToTime(currentTime)}</p>
-      <button className="mt-10" onClick={toggle}>
-        {isPlaying ? 'Pause' : 'Play'}
+      <button className="mt-10" onClick={play}>
+        Play
+      </button>
+      <button className="ml-4" onClick={pause}>
+        Pause
+      </button>
+      <button className="ml-4" onClick={stop}>
+        Stop
       </button>
     </div>
   );

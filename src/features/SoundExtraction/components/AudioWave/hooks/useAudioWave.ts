@@ -1,23 +1,23 @@
-import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { RefObject, useCallback, useEffect, useState } from 'react';
 
-import { Duration } from '@/features/SoundExtraction/components/AudioWave';
-
-import { draw } from './draw';
+import { draw } from '../draw';
+import { type Duration } from '../type';
 
 interface useAudioWaveParams {
-  container: RefObject<HTMLElement>;
-  canvas: RefObject<HTMLCanvasElement>;
+  containerRef: RefObject<HTMLElement>;
+  canvasRef: RefObject<HTMLCanvasElement>;
   audioBuffer: AudioBuffer | null;
   duration: Duration;
 }
 
-export function useAudioWave({ container, canvas, audioBuffer, duration }: useAudioWaveParams) {
+export function useAudioWave({ containerRef, canvasRef, audioBuffer, duration }: useAudioWaveParams) {
   const [peaks, setPeaks] = useState<Array<Float32Array | number[]>>();
+  const [isSliding, setIsSliding] = useState<boolean>(false);
 
   /* 웨이브 그리기 */
   const drawWave = () => {
-    if (!canvas.current || !peaks) return;
-    const ctx = canvas.current.getContext('2d');
+    if (!canvasRef.current || !peaks) return;
+    const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
 
     draw(ctx, peaks, duration, {
@@ -56,12 +56,12 @@ export function useAudioWave({ container, canvas, audioBuffer, duration }: useAu
 
   const handleHover = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      if (!container.current || !duration.full) return;
+      if (!containerRef.current || !duration.full) return;
 
       const hoverLine = document.getElementById('hover-line');
       if (!hoverLine) return;
 
-      const containerRect = container.current.getBoundingClientRect();
+      const containerRect = containerRef.current.getBoundingClientRect();
       const containerWidth = containerRect.width;
 
       // 이벤트의 X 위치를 슬라이더 상대 위치로 계산
@@ -79,7 +79,7 @@ export function useAudioWave({ container, canvas, audioBuffer, duration }: useAu
         hoverLine.style.opacity = '0';
       }
     },
-    [container, duration],
+    [containerRef, duration],
   );
 
   const handleMouseLeave = useCallback(() => {
@@ -89,18 +89,18 @@ export function useAudioWave({ container, canvas, audioBuffer, duration }: useAu
 
   /* 캔버스 리사이즈 */
   const resizeCanvas = useCallback(() => {
-    if (!container.current || !canvas.current) return;
+    if (!containerRef.current || !canvasRef.current) return;
     const pixelRatio = window.devicePixelRatio || 1;
 
-    const { offsetWidth, offsetHeight } = container.current;
+    const { offsetWidth, offsetHeight } = containerRef.current;
 
-    canvas.current.width = offsetWidth * pixelRatio;
-    canvas.current.height = offsetHeight * pixelRatio;
-    canvas.current.style.width = `${offsetWidth}px`;
-    canvas.current.style.height = `${offsetHeight}px`;
+    canvasRef.current.width = offsetWidth * pixelRatio;
+    canvasRef.current.height = offsetHeight * pixelRatio;
+    canvasRef.current.style.width = `${offsetWidth}px`;
+    canvasRef.current.style.height = `${offsetHeight}px`;
 
     drawWave();
-  }, [container, canvas]);
+  }, [containerRef, canvasRef]);
 
   /* 피크 추출 */
   useEffect(() => {
@@ -113,7 +113,7 @@ export function useAudioWave({ container, canvas, audioBuffer, duration }: useAu
   /* 윈도우 리사이즈 */
   useEffect(() => {
     const resizeObserver = new ResizeObserver(() => resizeCanvas());
-    if (container.current) resizeObserver.observe(container.current);
+    if (containerRef.current) resizeObserver.observe(containerRef.current);
     return () => resizeObserver.disconnect();
   }, [resizeCanvas]);
 

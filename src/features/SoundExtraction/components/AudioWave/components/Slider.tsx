@@ -1,101 +1,103 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { RefObject, useCallback } from 'react';
 
-import { Duration } from '@/features/SoundExtraction/components/AudioWave';
-import { convertToTime } from '@/features/SoundExtraction/components/AudioWave/calculation';
+import { convertToTime } from '../calculation';
+import { Duration } from '../type';
 
 interface SliderProps {
+  containerRef: RefObject<HTMLElement>;
   duration: Duration;
-  onChange?: (duration: Duration) => void;
+  onChange?: (duration: Duration, handle: 'begin' | 'end') => void;
+  onEnd?: () => void;
 }
 
-const Slider = ({ duration, onChange }: SliderProps) => {
-  const slider = useRef<HTMLDivElement>(null);
-  const [ratio, setRatio] = useState({ left: 0, width: 0 });
+const Slider = ({ containerRef, duration, onChange, onEnd }: SliderProps) => {
+  const handleMouseDown = useCallback(
+    (handle: 'begin' | 'end') => (downEvent: React.MouseEvent) => {
+      if (!containerRef.current) return;
 
-  useEffect(() => {
-    const left = (duration.begin / duration.full) * 100;
-    const width = (duration.end / duration.full) * 100 - left;
-    setRatio({ left, width });
-  }, [duration]);
+      downEvent.preventDefault();
+      downEvent.stopPropagation();
 
-  /* 슬라이더 리사이즈 */
-  const resizeSlider = useCallback(
-    (pos: 'left' | 'right') => (event: React.MouseEvent) => {
-      const parentEl = slider.current?.parentElement;
-      if (!parentEl) return;
+      const parentWidth = containerRef.current.clientWidth;
+      const startX = downEvent.clientX;
 
-      event.preventDefault();
-      event.stopPropagation();
-
-      const parentWidth = parentEl.clientWidth;
-      const startX = event.clientX;
       let frameId: number;
 
-      const updateDuration = (newBeginTime: number, newEndTime: number) => {
-        if (
-          (pos === 'left' && newBeginTime <= duration.end) ||
-          (pos === 'right' && newEndTime >= duration.begin)
-        )
-          onChange?.({ ...duration, begin: newBeginTime, end: newEndTime });
+      const handleMouseMove = (moveEvent: MouseEvent) => {
+        moveEvent.preventDefault();
+        moveEvent.stopPropagation();
+
+        cancelAnimationFrame(frameId);
+
+        frameId = requestAnimationFrame(() => {
+          const diffX = moveEvent.clientX - startX;
+          const diffDuration = (diffX / parentWidth) * duration.full;
+
+          const newBeginTime =
+            handle === 'begin' ? Math.max(0, duration.begin + diffDuration) : duration.begin;
+          const newEndTime =
+            handle === 'end' ? Math.min(duration.full, duration.end + diffDuration) : duration.end;
+
+          if (
+            (handle === 'begin' && newBeginTime <= duration.end) ||
+            (handle === 'end' && newEndTime >= duration.begin)
+          ) {
+            onChange?.({ ...duration, begin: newBeginTime, end: newEndTime }, handle);
+          }
+        });
       };
 
-      const handleMouseMove = (moveEvent: MouseEvent) => {
-        cancelAnimationFrame(frameId);
-        frameId = requestAnimationFrame(() => {
-          const diff = moveEvent.clientX - startX;
-          const diffDuration = (diff / parentWidth) * duration.full;
+      const handleMouseUp = (upEvent: MouseEvent) => {
+        upEvent.preventDefault();
+        upEvent.stopPropagation();
 
-          const newBeginTime = pos === 'left' ? Math.max(0, duration.begin + diffDuration) : duration.begin;
-          const newEndTime =
-            pos === 'right' ? Math.min(duration.full, duration.end + diffDuration) : duration.end;
-
-          updateDuration(newBeginTime, newEndTime);
-        });
+        cleanup();
       };
 
       const cleanup = () => {
         document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', cleanup);
-        document.removeEventListener('mouseleave', cleanup);
+        document.removeEventListener('mouseup', handleMouseUp);
         cancelAnimationFrame(frameId);
+        onEnd?.();
       };
 
       document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', cleanup);
-      document.addEventListener('mouseleave', cleanup);
+      document.addEventListener('mouseup', handleMouseUp);
     },
     [duration, onChange],
   );
 
+  const leftRatio = (duration.begin / duration.full) * 100;
+  const widthRatio = (duration.end / duration.full) * 100 - leftRatio;
+
   return (
     <div
-      ref={slider}
       className="absolute top-0 h-full"
       style={{
-        left: `${ratio.left}%`,
-        width: `${ratio.width}%`,
+        left: `${leftRatio}%`,
+        width: `${widthRatio}%`,
       }}
     >
-      {/* Left Handle */}
-      <div className="absolute -left-[12px] h-full w-3" onMouseDown={resizeSlider('left')}>
+      {/* Begin Handle */}
+      <div className="absolute -left-[12px] h-full w-3" onMouseDown={handleMouseDown('begin')}>
         <div
           data-content={convertToTime(duration.begin)}
-          className="absolute h-full w-full bg-primary before:absolute before:-bottom-6 before:left-1/2 before:z-10 before:h-[20px] before:-translate-x-1/2 before:select-none before:text-xs before:text-foreground-muted before:content-[attr(data-content)]"
+          className="absolute h-full w-full cursor-ew-resize rounded-l-md bg-primary before:absolute before:-bottom-6 before:left-1/2 before:z-10 before:h-[20px] before:-translate-x-1/2 before:select-none before:text-xs before:text-foreground-muted before:content-[attr(data-content)]"
         />
       </div>
 
-      {/* Right Handle */}
-      <div className="absolute -right-[12px] h-full w-3" onMouseDown={resizeSlider('right')}>
+      {/* End Handle */}
+      <div className="absolute -right-[12px] h-full w-3" onMouseDown={handleMouseDown('end')}>
         <div
           data-content={convertToTime(duration.end)}
-          className="absolute h-full w-full bg-primary before:absolute before:-bottom-6 before:left-1/2 before:z-10 before:h-[20px] before:-translate-x-1/2 before:select-none before:text-xs before:text-foreground-muted before:content-[attr(data-content)]"
+          className="absolute h-full w-full cursor-ew-resize rounded-r-md bg-primary before:absolute before:-bottom-6 before:left-1/2 before:z-10 before:h-[20px] before:-translate-x-1/2 before:select-none before:text-xs before:text-foreground-muted before:content-[attr(data-content)]"
         />
       </div>
 
       {/* Hover able */}
-      <div id="hoverable" className="absolute h-full w-full" />
+      <div id="hoverable" className="pointer-events-none absolute h-full w-full" />
 
-      {/* Duration */}
+      {/* Duration Label */}
       <div className="absolute bottom-1 left-1/2 -translate-x-1/2 select-none text-xs">
         {convertToTime(duration.end - duration.begin)}
       </div>
