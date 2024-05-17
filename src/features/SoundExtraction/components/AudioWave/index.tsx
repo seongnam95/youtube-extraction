@@ -36,7 +36,7 @@ const AudioWave = ({ className, audioUrl }: AudioWaveProps) => {
     duration,
   });
 
-  const { playPause, stop, audioState, currentTime, startedAt, setStartedAt } = useAudioPlayer({
+  const { playPause, audioState, currentTime, startedAt, setStartedAt } = useAudioPlayer({
     audioContext,
     audioBuffer,
     duration,
@@ -75,7 +75,7 @@ const AudioWave = ({ className, audioUrl }: AudioWaveProps) => {
 
   return (
     <div className={className}>
-      <div id="scroll-wrap" className="mb-8">
+      <div id="scroll-wrap" className="mx-3 mb-8">
         <div
           ref={containerRef}
           className="relative block h-full w-full"
@@ -111,19 +111,18 @@ const AudioWave = ({ className, audioUrl }: AudioWaveProps) => {
         </div>
       </div>
 
-      <p className="my-5">
-        {convertToTime(currentTime)} ({audioState})
-      </p>
-
-      <Flex>
-        <IconButton onClick={playPause}>{audioState === 'playing' ? <PlayIcon /> : <PauseIcon />}</IconButton>
-
-        <button className="ml-4" onClick={stop}>
-          Stop
-        </button>
+      <Flex className="mt-14" align="center" justify="center">
+        <IconButton size="xl" variant="outline" circle onClick={playPause}>
+          {audioState === 'playing' ? (
+            <PauseIcon className="h-5 w-5 fill-foreground text-foreground" />
+          ) : (
+            <PlayIcon className="ml-1 h-6 w-6 fill-foreground text-foreground" />
+          )}
+        </IconButton>
       </Flex>
 
-      <Flex gap="2">
+      {/* 
+      <Flex gap="2" justify="around">
         <input
           type="number"
           min={0}
@@ -138,7 +137,7 @@ const AudioWave = ({ className, audioUrl }: AudioWaveProps) => {
           value={duration.end}
           onChange={handleInputChange('end')}
         />
-      </Flex>
+      </Flex> */}
     </div>
   );
 };

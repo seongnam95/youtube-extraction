@@ -30,8 +30,6 @@ const SoundExtraction = () => {
         <Input variant="underline" onChange={(e) => setInputValue(e.target.value)} />
         <Button onClick={handleAddLink}>추가</Button>
       </Flex>
-
-      <AudioWave audioUrl="/test.mp3" />
     </div>
   );
 };

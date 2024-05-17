@@ -1,19 +1,15 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
+import Footer from '@/components/layouts/Footer';
 import SoundExtraction from '@/features/SoundExtraction';
+import AudioWave from '@/features/SoundExtraction/components/AudioWave';
 
 function App() {
   return (
-    <div className="mt-24 h-dvh w-dvw px-8">
-      <Tabs className="mx-auto max-w-[700px]" defaultValue="sound">
-        <TabsList className="">
-          <TabsTrigger value="sound">Sound</TabsTrigger>
-          <TabsTrigger value="sound2">Video</TabsTrigger>
-        </TabsList>
-        <TabsContent value="sound" className="py-3">
-          <SoundExtraction />
-        </TabsContent>
-        <TabsContent value="sound2"></TabsContent>
-      </Tabs>
+    <div className="flex h-dvh w-dvw flex-col">
+      {/* Content */}
+      <div className="flex-1 px-8 pt-24">
+        <AudioWave audioUrl="/test.mp3" />
+      </div>
+      <Footer />
     </div>
   );
 }
