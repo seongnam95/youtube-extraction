@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 
+import PauseIcon from '@/assets/svg/pause.svg?react';
+import PlayIcon from '@/assets/svg/play.svg?react';
+import { Flex } from '@/components/ui/Flex';
+import { IconButton } from '@/components/ui/IconButton';
 import { cn } from '@/lib/cn';
 
 import { convertToTime } from './calculation';
@@ -32,17 +36,24 @@ const AudioWave = ({ className, audioUrl }: AudioWaveProps) => {
     duration,
   });
 
-  const { play, pause, stop, audioState, currentTime, startedAt, setStartedAt } = useAudioPlayer({
+  const { playPause, stop, audioState, currentTime, startedAt, setStartedAt } = useAudioPlayer({
     audioContext,
     audioBuffer,
     duration,
   });
 
-  const handleChangeSlider = (updatedDuration: Duration, handle: 'begin' | 'end') => {
+  const updateDuration = (updatedDuration: Duration, pos: 'begin' | 'end') => {
     setDuration(updatedDuration);
 
-    if (handle === 'end') setStartedAt(updatedDuration.end - 1);
-    else if (handle === 'begin') setStartedAt(updatedDuration.begin);
+    if (pos === 'begin') setStartedAt(updatedDuration.begin);
+    else if (pos === 'end') setStartedAt(updatedDuration.end - 3);
+  };
+
+  const handleInputChange = (pos: 'begin' | 'end') => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+
+    const updatedDuration = { ...duration, [pos]: value };
+    updateDuration(updatedDuration, pos);
   };
 
   useEffect(() => {
@@ -60,7 +71,7 @@ const AudioWave = ({ className, audioUrl }: AudioWaveProps) => {
         });
       });
     }
-  }, [audioUrl]);
+  }, [audioUrl, audioContext]);
 
   return (
     <div className={className}>
@@ -72,7 +83,7 @@ const AudioWave = ({ className, audioUrl }: AudioWaveProps) => {
           onMouseLeave={handleMouseLeave}
         >
           {/* Slider */}
-          <Slider containerRef={containerRef} duration={duration} onChange={handleChangeSlider} />
+          <Slider containerRef={containerRef} duration={duration} onChange={updateDuration} />
 
           {/* Hover Line */}
           <div
@@ -83,10 +94,12 @@ const AudioWave = ({ className, audioUrl }: AudioWaveProps) => {
           {/* Progress Line */}
           <div
             id="progress-line"
+            data-content={convertToTime(currentTime)}
             className={cn(
               'absolute h-full w-[1px] bg-foreground',
               startedAt === duration.begin && 'opacity-0',
               audioState !== 'stopped' && 'opacity-100',
+              'before:absolute before:bottom-full before:left-1/2 before:mb-2 before:-translate-x-1/2 before:rounded-full before:bg-surface before:px-3 before:py-0.5 before:text-sm before:text-foreground-accent before:content-[attr(data-content)]',
             )}
             style={{
               left: `${(currentTime / duration.full) * 100}%`,
@@ -98,18 +111,34 @@ const AudioWave = ({ className, audioUrl }: AudioWaveProps) => {
         </div>
       </div>
 
-      {audioState}
+      <p className="my-5">
+        {convertToTime(currentTime)} ({audioState})
+      </p>
 
-      <p>{convertToTime(currentTime)}</p>
-      <button className="mt-10" onClick={play}>
-        Play
-      </button>
-      <button className="ml-4" onClick={pause}>
-        Pause
-      </button>
-      <button className="ml-4" onClick={stop}>
-        Stop
-      </button>
+      <Flex>
+        <IconButton onClick={playPause}>{audioState === 'playing' ? <PlayIcon /> : <PauseIcon />}</IconButton>
+
+        <button className="ml-4" onClick={stop}>
+          Stop
+        </button>
+      </Flex>
+
+      <Flex gap="2">
+        <input
+          type="number"
+          min={0}
+          max={duration.end}
+          value={duration.begin}
+          onChange={handleInputChange('begin')}
+        />
+        <input
+          type="number"
+          min={duration.begin}
+          max={duration.full}
+          value={duration.end}
+          onChange={handleInputChange('end')}
+        />
+      </Flex>
     </div>
   );
 };

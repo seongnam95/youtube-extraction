@@ -64,14 +64,11 @@ export function useAudioWave({ containerRef, canvasRef, audioBuffer, duration }:
       const containerRect = containerRef.current.getBoundingClientRect();
       const containerWidth = containerRect.width;
 
-      // 이벤트의 X 위치를 슬라이더 상대 위치로 계산
       const positionX = event.clientX - containerRect.left;
 
-      // duration의 시작과 끝 위치를 계산
       const startPosition = (duration.begin / duration.full) * containerWidth;
       const endPosition = (duration.end / duration.full) * containerWidth;
 
-      // 위치가 duration.begin과 duration.end 사이에 있는지 확인
       if (positionX >= startPosition && positionX <= endPosition) {
         hoverLine.style.opacity = '1';
         hoverLine.style.left = `${(positionX / containerWidth) * 100}%`;

@@ -28,7 +28,6 @@ export const useAudioPlayer = ({ audioContext, audioBuffer, duration }: UseAudio
     if (audioState !== 'stopped') stop();
     setCurrentTime(startedAt);
     setPlayedDuration(startedAt - duration.begin);
-    console.log(startedAt, startedAt - duration.begin);
   }, [startedAt]);
 
   const clearSource = () => {
@@ -95,6 +94,8 @@ export const useAudioPlayer = ({ audioContext, audioBuffer, duration }: UseAudio
     startTimeRef.current = null;
   };
 
+  const playPause = () => (audioState === 'playing' ? pause() : play());
+
   const updateCurrentTime = () => {
     const tick = () => {
       const elapsed = audioContext.currentTime - startTimeRef.current!;
@@ -107,5 +108,5 @@ export const useAudioPlayer = ({ audioContext, audioBuffer, duration }: UseAudio
     tick();
   };
 
-  return { play, pause, stop, currentTime, audioState, startedAt, setStartedAt };
+  return { play, pause, stop, playPause, currentTime, audioState, startedAt, setStartedAt };
 };
