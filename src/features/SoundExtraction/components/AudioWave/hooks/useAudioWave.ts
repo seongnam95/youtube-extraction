@@ -12,7 +12,7 @@ interface useAudioWaveParams {
 
 export function useAudioWave({ containerRef, canvasRef, audioBuffer, duration }: useAudioWaveParams) {
   const [peaks, setPeaks] = useState<Array<Float32Array | number[]>>();
-  const [isSliding, setIsSliding] = useState<boolean>(false);
+  const [hoverTime, setHoverTime] = useState<number>(0);
 
   /* 웨이브 그리기 */
   const drawWave = () => {
@@ -54,27 +54,20 @@ export function useAudioWave({ containerRef, canvasRef, audioBuffer, duration }:
     [audioBuffer],
   );
 
-  const handleHover = useCallback(
+  const hoverMouse = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      if (!containerRef.current || !duration.full) return;
-
-      const hoverLine = document.getElementById('hover-line');
-      if (!hoverLine) return;
+      if (!containerRef.current) return;
 
       const containerRect = containerRef.current.getBoundingClientRect();
       const containerWidth = containerRect.width;
 
       const positionX = event.clientX - containerRect.left;
+      const newHoverTime = (duration.full / containerWidth) * positionX;
 
       const startPosition = (duration.begin / duration.full) * containerWidth;
       const endPosition = (duration.end / duration.full) * containerWidth;
 
-      if (positionX >= startPosition && positionX <= endPosition) {
-        hoverLine.style.opacity = '1';
-        hoverLine.style.left = `${(positionX / containerWidth) * 100}%`;
-      } else {
-        hoverLine.style.opacity = '0';
-      }
+      if (positionX >= startPosition && positionX <= endPosition) setHoverTime(newHoverTime);
     },
     [containerRef, duration],
   );
@@ -97,7 +90,7 @@ export function useAudioWave({ containerRef, canvasRef, audioBuffer, duration }:
     canvasRef.current.style.height = `${offsetHeight}px`;
 
     drawWave();
-  }, [containerRef, canvasRef]);
+  }, [containerRef, canvasRef, duration]);
 
   /* 피크 추출 */
   useEffect(() => {
@@ -117,9 +110,10 @@ export function useAudioWave({ containerRef, canvasRef, audioBuffer, duration }:
   useEffect(() => drawWave(), [peaks, duration.begin, duration.end]);
 
   return {
-    handleHover,
+    hoverMouse,
     handleMouseLeave,
     duration,
+    hoverTime,
   };
 }
 

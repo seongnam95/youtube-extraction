@@ -44,6 +44,7 @@ export const draw = (
   const pixelRatio = window.devicePixelRatio || 1;
   const vScale = 1;
   const startX = width * (duration.begin / duration.full);
+
   const endX = width * (duration.end / duration.full);
 
   const barWidth = options.barWidth ? options.barWidth * pixelRatio : 1;

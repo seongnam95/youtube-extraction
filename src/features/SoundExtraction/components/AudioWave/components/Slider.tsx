@@ -6,11 +6,12 @@ import { Duration } from '../type';
 interface SliderProps {
   containerRef: RefObject<HTMLElement>;
   duration: Duration;
+  onClick?: (duration: number) => void;
   onChange?: (duration: Duration, handle: 'begin' | 'end') => void;
   onEnd?: () => void;
 }
 
-const Slider = ({ containerRef, duration, onChange, onEnd }: SliderProps) => {
+const Slider = ({ containerRef, duration, onClick, onChange, onEnd }: SliderProps) => {
   const handleMouseDown = useCallback(
     (handle: 'begin' | 'end') => (downEvent: React.MouseEvent) => {
       if (!containerRef.current) return;
@@ -67,6 +68,16 @@ const Slider = ({ containerRef, duration, onChange, onEnd }: SliderProps) => {
     [duration, onChange],
   );
 
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const x = e.clientX - containerRect.left;
+
+    const clickedTime = (x / containerRect.width) * duration.full;
+    onClick?.(clickedTime);
+  };
+
   const leftRatio = (duration.begin / duration.full) * 100;
   const widthRatio = (duration.end / duration.full) * 100 - leftRatio;
 
@@ -95,7 +106,7 @@ const Slider = ({ containerRef, duration, onChange, onEnd }: SliderProps) => {
       </div>
 
       {/* Hover able */}
-      <div id="hoverable" className="pointer-events-none absolute h-full w-full" />
+      <div className="absolute top-0 h-full w-full" onClick={handleClick} />
 
       {/* Duration Label */}
       <div className="absolute bottom-1 left-1/2 -translate-x-1/2 select-none text-xs">
