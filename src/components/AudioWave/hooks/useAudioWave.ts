@@ -1,4 +1,4 @@
-import { RefObject, useCallback, useEffect, useState } from 'react';
+import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 
 import { draw } from '../draw';
 import { type Duration } from '../type';
@@ -11,8 +11,11 @@ interface useAudioWaveParams {
 }
 
 export function useAudioWave({ containerRef, canvasRef, audioBuffer, duration }: useAudioWaveParams) {
+  const animationFrameRef = useRef<number | null>(null);
+
   const [peaks, setPeaks] = useState<Array<Float32Array | number[]>>();
   const [hoverTime, setHoverTime] = useState<number>(0);
+  const [isHover, setIsHover] = useState<boolean>(false);
 
   /* 웨이브 그리기 */
   const drawWave = () => {
@@ -54,28 +57,35 @@ export function useAudioWave({ containerRef, canvasRef, audioBuffer, duration }:
     [audioBuffer],
   );
 
-  const hoverMouse = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      if (!containerRef.current) return;
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
 
-      const containerRect = containerRef.current.getBoundingClientRect();
-      const containerWidth = containerRect.width;
+      animationFrameRef.current = requestAnimationFrame(() => {
+        if (!containerRef.current) return;
 
-      const positionX = event.clientX - containerRect.left;
-      const newHoverTime = (duration.full / containerWidth) * positionX;
+        const containerRect = containerRef.current.getBoundingClientRect();
+        const containerWidth = containerRect.width;
 
-      const startPosition = (duration.begin / duration.full) * containerWidth;
-      const endPosition = (duration.end / duration.full) * containerWidth;
+        const positionX = e.clientX - containerRect.left;
+        const newHoverTime = (duration.full / containerWidth) * positionX;
 
-      if (positionX >= startPosition && positionX <= endPosition) setHoverTime(newHoverTime);
+        const startPosition = (duration.begin / duration.full) * containerWidth;
+        const endPosition = (duration.end / duration.full) * containerWidth;
+
+        if (positionX >= startPosition && positionX <= endPosition) {
+          setHoverTime(newHoverTime);
+          setIsHover(true);
+        } else setIsHover(false);
+      });
     },
     [containerRef, duration],
   );
 
-  const handleMouseLeave = useCallback(() => {
-    const hoverLine = document.getElementById('hover-line');
-    if (hoverLine) hoverLine.style.opacity = '0';
-  }, []);
+  const handleMouseLeave = () => {
+    if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+    setIsHover(false);
+  };
 
   /* 캔버스 리사이즈 */
   const resizeCanvas = useCallback(() => {
@@ -110,10 +120,10 @@ export function useAudioWave({ containerRef, canvasRef, audioBuffer, duration }:
   useEffect(() => drawWave(), [peaks, duration.begin, duration.end]);
 
   return {
-    hoverMouse,
-    handleMouseLeave,
-    duration,
     hoverTime,
+    isHover,
+    handleMouseMove,
+    handleMouseLeave,
   };
 }
 

@@ -4,7 +4,7 @@ import { type Duration } from '../type';
 
 type AudioState = 'playing' | 'paused' | 'stopped';
 interface UseAudioPlayerParams {
-  audioContext: AudioContext;
+  audioContext: AudioContext | null;
   audioBuffer: AudioBuffer | null;
   duration: Duration;
 }
@@ -20,12 +20,8 @@ export const useAudioPlayer = ({ audioContext, audioBuffer, duration }: UseAudio
   const [startedAt, setStartedAt] = useState<number>(0);
 
   useEffect(() => {
-    if (startedAt < duration.begin || startedAt > duration.end) {
-      console.error(`playStartedAt value must be between ${duration.begin} and ${duration.end}`);
-      return;
-    }
-
     if (audioState !== 'stopped') stop();
+
     setCurrentTime(startedAt);
     setPlayedDuration(startedAt - duration.begin);
   }, [startedAt]);
@@ -45,8 +41,8 @@ export const useAudioPlayer = ({ audioContext, audioBuffer, duration }: UseAudio
   };
 
   const play = (): void => {
-    if (!audioBuffer || audioState === 'playing') return;
-
+    if (!audioContext || !audioBuffer || audioState === 'playing') return;
+    console.log(audioContext.state);
     clearSource();
 
     const source = audioContext.createBufferSource();
@@ -74,7 +70,7 @@ export const useAudioPlayer = ({ audioContext, audioBuffer, duration }: UseAudio
   };
 
   const pause = (): void => {
-    if (audioState !== 'playing' || !sourceRef.current) return;
+    if (audioState !== 'playing' || !audioContext || !sourceRef.current) return;
 
     const elapsed = audioContext.currentTime - (startTimeRef.current ?? 0);
     setPlayedDuration(playedDuration + elapsed);
@@ -85,7 +81,7 @@ export const useAudioPlayer = ({ audioContext, audioBuffer, duration }: UseAudio
 
   const stop = (): void => {
     clearSource();
-    console.log('stop()');
+
     setAudioState('stopped');
     setStartedAt(duration.begin);
     setCurrentTime(duration.begin);
@@ -97,6 +93,8 @@ export const useAudioPlayer = ({ audioContext, audioBuffer, duration }: UseAudio
   const playPause = () => (audioState === 'playing' ? pause() : play());
 
   const updateCurrentTime = () => {
+    if (!audioContext) return;
+
     const tick = () => {
       const elapsed = audioContext.currentTime - startTimeRef.current!;
       const newTime = duration.begin + playedDuration + elapsed;
