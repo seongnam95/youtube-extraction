@@ -16,11 +16,11 @@ import { type AudioWaveOptions, type Duration } from './type';
 
 interface AudioWaveProps {
   className?: string;
-  audioUrl?: string;
+  audioFile?: File;
   options?: AudioWaveOptions;
 }
 
-const AudioWave = ({ className, audioUrl }: AudioWaveProps) => {
+const AudioWave = ({ className, audioFile }: AudioWaveProps) => {
   const audioContextRef = useRef<AudioContext | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -46,10 +46,9 @@ const AudioWave = ({ className, audioUrl }: AudioWaveProps) => {
     if (!audioContextRef.current) audioContextRef.current = new AudioContext();
 
     const fetchAudio = async () => {
-      if (!audioContextRef.current || !audioUrl || audioBuffer) return;
+      if (!audioContextRef.current || !audioFile || audioBuffer) return;
 
-      const response = await fetch(audioUrl);
-      const arrayBuffer = await response.arrayBuffer();
+      const arrayBuffer = await audioFile.arrayBuffer();
       const decodedBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
 
       setAudioBuffer(decodedBuffer);
@@ -67,7 +66,7 @@ const AudioWave = ({ className, audioUrl }: AudioWaveProps) => {
         audioContextRef.current = null;
       }
     };
-  }, [audioContextRef.current, audioUrl]);
+  }, [audioContextRef.current, audioFile]);
 
   const updateDuration = (updatedDuration: Duration, pos: 'begin' | 'end') => {
     setDuration(updatedDuration);
@@ -93,7 +92,7 @@ const AudioWave = ({ className, audioUrl }: AudioWaveProps) => {
     if (clickedTime >= begin && clickedTime <= end) setStartedAt(clickedTime);
   };
 
-  if (!audioContextRef.current || !audioBuffer) return null;
+  if (!audioBuffer || !audioContextRef.current) return null;
   return (
     <div className={className}>
       <div id="scroll-wrap" className="mx-3 mb-8">

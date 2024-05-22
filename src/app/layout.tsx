@@ -3,7 +3,8 @@ import { ReactNode } from 'react';
 import { Metadata } from 'next';
 import { Noto_Sans_KR } from 'next/font/google';
 
-import Footer from '@/components/layouts/Footer';
+import Content from '@/layouts/Content';
+import Footer from '@/layouts/Footer';
 import '@/styles/globals.css';
 
 const inter = Noto_Sans_KR({ subsets: ['latin'] });
@@ -16,8 +17,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div id="root" className="flex h-dvh w-dvw flex-col">
-          <div className="flex-1 px-8 pt-24">{children}</div>
+        <div id="root" className="flex h-screen w-screen flex-col">
+          <Content className="flex-grow">{children}</Content>
           <Footer />
         </div>
       </body>

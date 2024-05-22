@@ -5,33 +5,6 @@
 @tailwind utilities;
 
 @layer base {
-  #waveform ::part(wrapper) {
-    @apply rounded-md bg-transparent;
-    backdrop-filter: blur(20px);
-  }
-
-  #waveform ::part(region) {
-    @apply bg-[#3A3AFC19];
-  }
-
-  #waveform ::part(region-handle) {
-    @apply border-region-bar;
-  }
-
-  #waveform ::part(cursor) {
-    @apply bg-foreground;
-  }
-
-  #waveform ::part(hover) {
-    @apply border-foreground-muted;
-  }
-
-  #waveform ::part(hover-label) {
-    @apply ml-1 rounded-md bg-surface px-2;
-  }
-}
-
-@layer base {
   * {
     @apply box-border border-border;
   }
