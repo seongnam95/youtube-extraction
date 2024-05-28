@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef } from 'react';
 
 import PauseIcon from '@/assets/svg/pause.svg';
 import PlayIcon from '@/assets/svg/play.svg';
@@ -21,13 +21,21 @@ interface AudioWaveProps {
 }
 
 const AudioWave = ({ className, audioFile }: AudioWaveProps) => {
-  const audioContextRef = useRef<AudioContext | null>(null);
-
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
-  const [duration, setDuration] = useState<Duration>({ full: 0, begin: 0, end: 0 });
+  const {
+    load,
+    playPause,
+    stop,
+    setDuration,
+    audioContext,
+    audioBuffer,
+    duration,
+    audioState,
+    currentTime,
+    setStartedAt,
+  } = useAudioPlayer();
 
   const { isHover, hoverTime, handleMouseMove, handleMouseLeave } = useAudioWave({
     containerRef,
@@ -35,38 +43,6 @@ const AudioWave = ({ className, audioFile }: AudioWaveProps) => {
     audioBuffer,
     duration,
   });
-
-  const { playPause, stop, audioState, currentTime, setStartedAt } = useAudioPlayer({
-    audioContext: audioContextRef.current,
-    audioBuffer,
-    duration,
-  });
-
-  useEffect(() => {
-    if (!audioContextRef.current) audioContextRef.current = new AudioContext();
-
-    const fetchAudio = async () => {
-      if (!audioContextRef.current || !audioFile || audioBuffer) return;
-
-      const arrayBuffer = await audioFile.arrayBuffer();
-      const decodedBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
-
-      setAudioBuffer(decodedBuffer);
-      setDuration((prev) => ({
-        ...prev,
-        full: decodedBuffer.duration,
-        end: decodedBuffer.duration,
-      }));
-    };
-
-    fetchAudio();
-
-    return () => {
-      if (audioContextRef.current) {
-        audioContextRef.current = null;
-      }
-    };
-  }, [audioContextRef.current, audioFile]);
 
   const updateDuration = (updatedDuration: Duration, pos: 'begin' | 'end') => {
     setDuration(updatedDuration);
@@ -92,7 +68,7 @@ const AudioWave = ({ className, audioFile }: AudioWaveProps) => {
     if (clickedTime >= begin && clickedTime <= end) setStartedAt(clickedTime);
   };
 
-  if (!audioBuffer || !audioContextRef.current) return null;
+  if (!audioBuffer || !audioContext) return null;
   return (
     <div className={className}>
       <div id="scroll-wrap" className="mx-3 mb-8">
@@ -113,9 +89,9 @@ const AudioWave = ({ className, audioFile }: AudioWaveProps) => {
           <div
             data-content={convertToTime(currentTime)}
             className={cn(
-              'pointer-events-none absolute top-0 z-10 h-full w-[1px] bg-foreground-accent',
+              'bg-foreground-accent pointer-events-none absolute top-0 z-10 h-full w-[1px]',
               audioState !== 'stopped' && 'opacity-100',
-              'before:absolute before:bottom-full before:left-1/2 before:mb-2 before:-translate-x-1/2 before:rounded-md before:bg-surface before:px-2 before:py-0.5 before:text-sm before:text-foreground-accent before:content-[attr(data-content)]',
+              'before:text-foreground-accent before:absolute before:bottom-full before:left-1/2 before:mb-2 before:-translate-x-1/2 before:rounded-md before:bg-surface before:px-2 before:py-0.5 before:text-sm before:content-[attr(data-content)]',
             )}
             style={{
               left: `${(currentTime / duration.full) * 100}%`,

@@ -1,23 +1,31 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { type Duration } from '../type';
+import { Duration } from '../type';
 
 type AudioState = 'playing' | 'paused' | 'stopped';
-interface UseAudioPlayerParams {
-  audioContext: AudioContext | null;
-  audioBuffer: AudioBuffer | null;
-  duration: Duration;
-}
 
-export const useAudioPlayer = ({ audioContext, audioBuffer, duration }: UseAudioPlayerParams) => {
+export const useAudioPlayer = () => {
+  const audioContextRef = useRef<AudioContext | null>(null);
+
   const animationFrameRef = useRef<number | null>(null);
   const sourceRef = useRef<AudioBufferSourceNode | null>(null);
   const startTimeRef = useRef<number | null>(null);
 
+  const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
   const [audioState, setAudioState] = useState<AudioState>('stopped');
-  const [currentTime, setCurrentTime] = useState<number>(0);
+  const [duration, setDuration] = useState<Duration>({ full: 0, begin: 0, end: 0 });
   const [playedDuration, setPlayedDuration] = useState<number>(0);
   const [startedAt, setStartedAt] = useState<number>(0);
+  const [currentTime, setCurrentTime] = useState<number>(0);
+
+  useEffect(() => {
+    return () => {
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (audioState !== 'stopped') stop();
@@ -26,7 +34,20 @@ export const useAudioPlayer = ({ audioContext, audioBuffer, duration }: UseAudio
     setPlayedDuration(startedAt - duration.begin);
   }, [startedAt]);
 
-  const clearSource = () => {
+  const load = useCallback(
+    async (audioFile: File | Blob) => {
+      if (!audioContextRef.current) audioContextRef.current = new AudioContext();
+
+      const arrayBuffer = await audioFile.arrayBuffer();
+      const decodedBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
+
+      setAudioBuffer(decodedBuffer);
+      setDuration({ full: decodedBuffer.duration, begin: 0, end: decodedBuffer.duration });
+    },
+    [audioContextRef.current],
+  );
+
+  const clearSource = useCallback(() => {
     if (sourceRef.current) {
       sourceRef.current.onended = null;
       sourceRef.current.stop();
@@ -38,16 +59,26 @@ export const useAudioPlayer = ({ audioContext, audioBuffer, duration }: UseAudio
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
     }
-  };
+  }, []);
 
-  const play = (): void => {
-    if (!audioContext || !audioBuffer || audioState === 'playing') return;
-    console.log(audioContext.state);
+  const stop = useCallback(() => {
     clearSource();
 
-    const source = audioContext.createBufferSource();
+    setAudioState('stopped');
+    setStartedAt(duration.begin);
+    setCurrentTime(duration.begin);
+    setPlayedDuration(0);
+    startTimeRef.current = null;
+  }, [clearSource, duration.begin]);
+
+  const play = useCallback(() => {
+    if (!audioContextRef.current || !audioBuffer || audioState === 'playing') return;
+
+    clearSource();
+
+    const source = audioContextRef.current.createBufferSource();
     source.buffer = audioBuffer;
-    source.connect(audioContext.destination);
+    source.connect(audioContextRef.current.destination);
 
     const offset = playedDuration;
     const playDuration = duration.end - (duration.begin + offset);
@@ -55,48 +86,36 @@ export const useAudioPlayer = ({ audioContext, audioBuffer, duration }: UseAudio
     source.start(0, duration.begin + offset, playDuration);
 
     source.onended = () => {
-      clearSource();
-      setAudioState('stopped');
-      setCurrentTime(startedAt);
-      setPlayedDuration(startedAt - duration.begin);
-      startTimeRef.current = null;
+      stop();
     };
 
     sourceRef.current = source;
-    startTimeRef.current = audioContext.currentTime;
+    startTimeRef.current = audioContextRef.current.currentTime;
 
     setAudioState('playing');
     updateCurrentTime();
-  };
+  }, [audioContextRef.current, audioBuffer, audioState, clearSource, duration, playedDuration, stop]);
 
-  const pause = (): void => {
-    if (audioState !== 'playing' || !audioContext || !sourceRef.current) return;
+  const pause = useCallback(() => {
+    if (audioState !== 'playing' || !audioContextRef.current || !sourceRef.current) return;
 
-    const elapsed = audioContext.currentTime - (startTimeRef.current ?? 0);
+    const elapsed = audioContextRef.current.currentTime - (startTimeRef.current ?? 0);
     setPlayedDuration(playedDuration + elapsed);
 
     clearSource();
     setAudioState('paused');
-  };
+  }, [audioContextRef.current, audioState, clearSource, playedDuration]);
 
-  const stop = (): void => {
-    clearSource();
+  const playPause = useCallback(
+    () => (audioState === 'playing' ? pause() : play()),
+    [audioState, pause, play],
+  );
 
-    setAudioState('stopped');
-    setStartedAt(duration.begin);
-    setCurrentTime(duration.begin);
-    setPlayedDuration(duration.begin - duration.begin);
-
-    startTimeRef.current = null;
-  };
-
-  const playPause = () => (audioState === 'playing' ? pause() : play());
-
-  const updateCurrentTime = () => {
-    if (!audioContext) return;
-
+  const updateCurrentTime = useCallback(() => {
     const tick = () => {
-      const elapsed = audioContext.currentTime - startTimeRef.current!;
+      if (!audioContextRef.current) return;
+
+      const elapsed = audioContextRef.current.currentTime - (startTimeRef.current ?? 0);
       const newTime = duration.begin + playedDuration + elapsed;
 
       setCurrentTime(newTime);
@@ -104,7 +123,21 @@ export const useAudioPlayer = ({ audioContext, audioBuffer, duration }: UseAudio
     };
 
     tick();
-  };
+  }, [audioContextRef.current, duration.begin, playedDuration]);
 
-  return { play, pause, stop, playPause, currentTime, audioState, startedAt, setStartedAt };
+  return {
+    load,
+    play,
+    pause,
+    stop,
+    playPause,
+    setDuration,
+    setStartedAt,
+    audioContext: audioContextRef.current,
+    audioBuffer,
+    duration,
+    currentTime,
+    audioState,
+    startedAt,
+  };
 };

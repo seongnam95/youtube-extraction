@@ -1,11 +1,15 @@
 import React from 'react';
 
-interface HeaderProps {
-  children?: React.ReactNode;
-}
+import NavigationBar from '@/components/NavigationBar';
 
-const Header = ({ children }: HeaderProps) => {
-  return <div>{children}</div>;
+interface HeaderProps {}
+
+const Header = ({}: HeaderProps) => {
+  return (
+    <div className="mb-16 mt-14 flex w-full items-center justify-center">
+      <NavigationBar />
+    </div>
+  );
 };
 
 export default Header;

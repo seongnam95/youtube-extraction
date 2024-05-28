@@ -1,9 +1,9 @@
-import * as React from "react";
+import * as React from 'react';
 
-import { Slot } from "@radix-ui/react-slot";
-import { type VariantProps, cva } from "class-variance-authority";
+import { Slot } from '@radix-ui/react-slot';
+import { type VariantProps, cva } from 'class-variance-authority';
 
-import { cn } from "@/lib/cn";
+import { cn } from '@/lib/cn';
 
 const buttonVariants = cva(
   `
@@ -25,14 +25,14 @@ const buttonVariants = cva(
       size: {
         default: `h-9 px-4 gap-1 text-sm`,
         sm: `h-7 px-4 gap-1 text-xs`,
-        lg: `h-10 px-5 gap-2 text-lg`,
+        lg: `h-12 px-5 gap-2 text-lg`,
       },
     },
     defaultVariants: {
-      variant: "default",
-      size: "default",
+      variant: 'default',
+      size: 'default',
     },
-  }
+  },
 );
 
 interface ButtonProps
@@ -43,17 +43,11 @@ interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button";
-    return (
-      <Comp
-        className={cn(buttonVariants({ variant, size }), className)}
-        ref={ref}
-        {...props}
-      />
-    );
-  }
+    const Comp = asChild ? Slot : 'button';
+    return <Comp className={cn(buttonVariants({ variant, size }), className)} ref={ref} {...props} />;
+  },
 );
 
-Button.displayName = "Button";
+Button.displayName = 'Button';
 
 export { Button };

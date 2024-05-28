@@ -1,5 +1,5 @@
-import { Config } from "tailwindcss";
-import tailwindAnimate from "tailwindcss-animate";
+import { Config } from 'tailwindcss';
+import tailwindAnimate from 'tailwindcss-animate';
 
 const pxToRem = (px: number, base = 16) => `${px / base}rem`;
 const range = (start: number, end: number, unit = 1) => {
@@ -8,45 +8,44 @@ const range = (start: number, end: number, unit = 1) => {
 };
 
 const config: Config = {
-  darkMode: "class",
-  content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  darkMode: 'class',
+  content: ['./src/**/*.{js,jsx,ts,tsx}'],
   theme: {
-    screens: { mobile: "768px", tablet: "1024px" },
+    screens: { mobile: '768px', tablet: '1024px' },
     colors: {
-      transparent: "transparent",
-      currentColor: "currentColor",
-      white: "#fff",
-      black: "#121212",
-      surface: "var(--surface)",
-      ring: "var(--ring)",
-      background: "var(--background)",
+      transparent: 'transparent',
+      currentColor: 'currentColor',
+      white: '#fff',
+      black: '#121212',
+      surface: 'var(--surface)',
+      ring: 'var(--ring)',
+      background: 'var(--background)',
       foreground: {
-        DEFAULT: "var(--foreground)",
-        accent: "var(--foreground-accent)",
-        muted: "var(--foreground-muted)",
+        DEFAULT: 'var(--foreground)',
+        muted: 'var(--foreground-muted)',
       },
       primary: {
-        DEFAULT: "var(--primary)",
-        accent: "var(--primary-accent)",
-        surface: "var(--primary-surface)",
-        foreground: "var(--primary-foreground)",
+        DEFAULT: 'var(--primary)',
+        accent: 'var(--primary-accent)',
+        surface: 'var(--primary-surface)',
+        foreground: 'var(--primary-foreground)',
       },
       secondary: {
-        DEFAULT: "var(--secondary)",
-        accent: "var(--secondary-accent)",
-        foreground: "var(--secondary-foreground)",
+        DEFAULT: 'var(--secondary)',
+        accent: 'var(--secondary-accent)',
+        foreground: 'var(--secondary-foreground)',
       },
       border: {
-        DEFAULT: "var(--border)",
-        accent: "var(--border-accent)",
+        DEFAULT: 'var(--border)',
+        accent: 'var(--border-accent)',
       },
       card: {
-        DEFAULT: "var(--card)",
-        foreground: "var(--card-foreground)",
+        DEFAULT: 'var(--card)',
+        foreground: 'var(--card-foreground)',
       },
       region: {
-        surface: "var(--region-surface)",
-        bar: "var(--region-bar)",
+        surface: 'var(--region-surface)',
+        bar: 'var(--region-bar)',
       },
     },
     extend: {
@@ -57,21 +56,21 @@ const config: Config = {
         }, {}),
       },
       listStyleType: {
-        circle: "circle",
+        circle: 'circle',
       },
       keyframes: {
-        "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
+        'accordion-down': {
+          from: { height: '0' },
+          to: { height: 'var(--radix-accordion-content-height)' },
         },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
+        'accordion-up': {
+          from: { height: 'var(--radix-accordion-content-height)' },
+          to: { height: '0' },
         },
       },
       animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
+        'accordion-down': 'accordion-down 0.2s ease-out',
+        'accordion-up': 'accordion-up 0.2s ease-out',
       },
     },
   },

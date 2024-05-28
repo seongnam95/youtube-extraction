@@ -1,29 +1,17 @@
-'use client';
+import React, { InputHTMLAttributes } from 'react';
 
-import React, { useState } from 'react';
+import LinkIcon from '@/assets/svg/link.svg';
+import { cn } from '@/lib/cn';
 
-interface InputProps {}
-
-const Input = ({}: InputProps) => {
-  const [inputValue, setInputValue] = useState<string>('가나다라마바사');
-  const [isYoutube, setIsYoutube] = useState<boolean>(false);
-
-  function isValidYoutubeUrl(value: string): boolean {
-    const pattern = /^https:\/\/www\.youtube\.com\/watch\?v=[\w-]+$/;
-    return pattern.test(value);
-  }
-
-  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setInputValue(value);
-    const isUrl = value.startsWith('http');
-  };
-
-  return (
-    <label className="flex rounded-md bg-surface px-4 py-3">
-      <input className="bg-transparent outline-none" type="text" value={inputValue} onChange={handleInput} />
-    </label>
-  );
-};
+const Input = React.forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
+  ({ className, ...props }, ref) => {
+    return (
+      <label className={cn('flex w-full items-center gap-3 rounded-md bg-surface px-3 py-3', className)}>
+        <LinkIcon width="22" height="22" className="mt-2pxr fill-foreground-muted" />
+        <input ref={ref} className="w-full bg-transparent outline-none" {...props} />
+      </label>
+    );
+  },
+);
 
 export default Input;

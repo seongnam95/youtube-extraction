@@ -1,16 +1,15 @@
 :root {
-  --background: #01071f;
-  --surface: #0d1329;
+  --background: #2a2e33;
+  --surface: #2e353d;
 
-  --border: #2d2e30;
-  --border-accent: #46484f;
+  --border: #40474f;
+  --border-accent: #677483;
 
-  --foreground: #b7b7b7;
-  --foreground-accent: #ebebeb;
+  --foreground: #d7dfea;
   --foreground-muted: #959595b9;
 
-  --primary: #3bcdc2;
-  --primary-accent: #bca5ff;
+  --primary: #426cff;
+  --primary-accent: #577cff;
   --primary-surface: #8152fe37;
   --primary-foreground: #fff;
 
