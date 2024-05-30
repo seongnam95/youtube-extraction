@@ -26,7 +26,8 @@ export function useAudioWave({ containerRef, canvasRef, audioBuffer, duration }:
     draw(ctx, peaks, duration, {
       barWidth: 1,
       barGap: 1,
-      waveColor: '#3bcdc2',
+      waveColor: '#24F678',
+      bgColor: '#21262C',
     });
   };
 

@@ -4,10 +4,10 @@ import PauseIcon from '@/assets/svg/pause.svg';
 import PlayIcon from '@/assets/svg/play.svg';
 import { convertToTime } from '@/components/AudioWave/calculation';
 import { useAudioPlayer } from '@/components/AudioWave/hooks/useAudioPlayer';
+import { Flex } from '@/components/ui/Flex';
 import { IconButton } from '@/components/ui/IconButton';
 import { Slider } from '@/components/ui/Slider';
 import { Text } from '@/components/ui/Text';
-import { cn } from '@/lib/cn';
 
 interface AudioProps {
   className?: string;
@@ -24,12 +24,12 @@ const Audio = ({ className, audio }: AudioProps) => {
   const handleSliderChange = (value: number[]) => setStartedAt(value[0]);
 
   return (
-    <div className={cn('flex items-center gap-4', className)}>
-      <IconButton size="sm" variant="secondary" onClick={playPause}>
+    <Flex align="center" gap="4" className={className}>
+      <IconButton size="sm" variant="ghost" circle onClick={playPause}>
         {audioState === 'playing' ? (
           <PauseIcon className="size-4 fill-foreground" />
         ) : (
-          <PlayIcon className="size-4 fill-foreground" />
+          <PlayIcon className="ml-2pxr size-4 fill-foreground" />
         )}
       </IconButton>
 
@@ -47,7 +47,7 @@ const Audio = ({ className, audio }: AudioProps) => {
       <Text size="sm" whiteSpace="nowrap">
         {convertToTime(duration.full)}
       </Text>
-    </div>
+    </Flex>
   );
 };
 

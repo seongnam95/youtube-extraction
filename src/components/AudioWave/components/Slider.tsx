@@ -78,7 +78,7 @@ const Slider = ({ containerRef, duration, onChange }: SliderProps) => {
       >
         <div
           data-content={convertToTime(duration.begin)}
-          className="absolute h-full w-full cursor-ew-resize rounded-l-md bg-primary before:absolute before:-bottom-6 before:left-1/2 before:z-10 before:h-[20px] before:-translate-x-1/2 before:select-none before:text-xs before:text-foreground-muted before:content-[attr(data-content)]"
+          className="absolute h-full w-full cursor-ew-resize rounded-l-md bg-[#18EDAD] before:absolute before:-bottom-6 before:left-1/2 before:z-10 before:h-[20px] before:-translate-x-1/2 before:select-none before:text-xs before:text-foreground-muted before:content-[attr(data-content)]"
         />
       </div>
 
@@ -89,7 +89,7 @@ const Slider = ({ containerRef, duration, onChange }: SliderProps) => {
       >
         <div
           data-content={convertToTime(duration.end)}
-          className="absolute h-full w-full cursor-ew-resize rounded-r-md bg-primary before:absolute before:-bottom-6 before:left-1/2 before:z-10 before:h-[20px] before:-translate-x-1/2 before:select-none before:text-xs before:text-foreground-muted before:content-[attr(data-content)]"
+          className="absolute h-full w-full cursor-ew-resize rounded-r-md bg-[#18EDAD] before:absolute before:-bottom-6 before:left-1/2 before:z-10 before:h-[20px] before:-translate-x-1/2 before:select-none before:text-xs before:text-foreground-muted before:content-[attr(data-content)]"
         />
       </div>
 

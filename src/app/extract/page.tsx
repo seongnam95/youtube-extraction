@@ -4,21 +4,36 @@ import { useState } from 'react';
 
 import ExtractCard from '@/components/ExtractCard';
 import SearchField from '@/components/SearchField';
-import { Heading } from '@/components/ui/Heading';
 import { useToast } from '@/components/ui/Toast/use-toast';
 import { useAudioData } from '@/context/AudioDataContext';
 import base64ToBlob from '@/lib/b64toBlob';
 
 const ExtractPage = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { setAudioData } = useAudioData();
+  const { audioData, setAudioData } = useAudioData();
 
   const { toast } = useToast();
 
-  const handleSubmit = (url: string) => downloadAudio(url);
+  const handleDownload = () => {
+    if (!audioData) return;
 
-  const downloadAudio = async (youtubeUrl: string) => {
+    const { title, blob } = audioData;
+    const element = document.createElement('a');
+    const file = new Blob([blob], { type: 'audio/mpeg' });
+
+    element.href = URL.createObjectURL(file);
+    element.download = `${title}.mp3`;
+
+    document.body.appendChild(element);
+    element.click();
+    element.remove();
+  };
+
+  const handleSubmit = (url: string) => audioExtraction(url);
+
+  const audioExtraction = async (youtubeUrl: string) => {
     try {
+      setAudioData(null);
       setIsLoading(true);
       const response = await fetch(`/api/audio?link=${encodeURIComponent(youtubeUrl)}`);
 
@@ -52,12 +67,8 @@ const ExtractPage = () => {
 
   return (
     <div className="flex flex-col justify-center">
-      <Heading className="mb-8" level="1" align="center">
-        Audio Extract
-      </Heading>
-
-      <SearchField onSubmit={handleSubmit} loading={isLoading} />
-      <ExtractCard className="mt-5" />
+      <SearchField className="mt-4" onSubmit={handleSubmit} loading={isLoading} />
+      <ExtractCard className="mt-5" onDownload={handleDownload} />
     </div>
   );
 };

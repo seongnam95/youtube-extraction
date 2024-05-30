@@ -17,6 +17,7 @@ export const useAudioPlayer = () => {
   const [playedDuration, setPlayedDuration] = useState<number>(0);
   const [startedAt, setStartedAt] = useState<number>(0);
   const [currentTime, setCurrentTime] = useState<number>(0);
+  const [isReady, setIsReady] = useState<boolean>(false);
 
   useEffect(() => {
     return () => {
@@ -37,10 +38,15 @@ export const useAudioPlayer = () => {
   const load = useCallback(
     async (audioFile: File | Blob) => {
       if (!audioContextRef.current) audioContextRef.current = new AudioContext();
+      clearSource();
+
+      setIsReady(false);
 
       const arrayBuffer = await audioFile.arrayBuffer();
       const decodedBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
 
+      setIsReady(true);
+      setStartedAt(0);
       setAudioBuffer(decodedBuffer);
       setDuration({ full: decodedBuffer.duration, begin: 0, end: decodedBuffer.duration });
     },
@@ -133,6 +139,7 @@ export const useAudioPlayer = () => {
     playPause,
     setDuration,
     setStartedAt,
+    isReady,
     audioContext: audioContextRef.current,
     audioBuffer,
     duration,

@@ -7,35 +7,41 @@ import Audio from '@/components/Audio';
 import { Button } from '@/components/ui/Button';
 import { Flex } from '@/components/ui/Flex';
 import { IconButton } from '@/components/ui/IconButton';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Tooltip } from '@/components/ui/Tooltip';
 import { useAudioData } from '@/context/AudioDataContext';
 import { cn } from '@/lib/cn';
 
 interface ExtractCardProps {
   className?: string;
+  onEdit?: () => void;
+  onDownload?: () => void;
 }
 
-const ExtractCard = ({ className }: ExtractCardProps) => {
+const ExtractCard = ({ className, onEdit, onDownload }: ExtractCardProps) => {
   const { audioData } = useAudioData();
 
   if (!audioData) return null;
   return (
     <div className={cn('w-full rounded-md bg-surface px-5 py-6', className)}>
-      {/* Audio Title */}
+      {/* 오디오 제목 */}
       <Flex align="center" gap="3">
         <YoutubeIcon className="mt-2pxr size-5 flex-shrink-0" />
         <p className="truncate text-sm">{audioData.title}</p>
       </Flex>
 
-      {/* Audio Player */}
+      {/* 오디오 플레이어 */}
       <Audio className="mt-4 w-full" audio={audioData.blob} />
 
-      {/* Button Wrap */}
       <Flex gap="3" className="mt-9" justify="end">
-        <IconButton size="lg" variant="outline" title="편집" aria-label="편집">
-          <AudioWaveIcon className="size-5 fill-foreground" />
-        </IconButton>
-        <Button>
+        {/* 편집 버튼 */}
+        <Tooltip content="오디오 편집" asChild>
+          <IconButton size="lg" variant="outline" aria-label="편집" onClick={onEdit}>
+            <AudioWaveIcon className="size-5 fill-foreground" />
+          </IconButton>
+        </Tooltip>
+
+        {/* 다운로드 버튼 */}
+        <Button onClick={onDownload}>
           <DownloadIcon className="mr-2 size-5 fill-primary-foreground" />
           다운로드
         </Button>

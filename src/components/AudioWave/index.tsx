@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import PauseIcon from '@/assets/svg/pause.svg';
 import PlayIcon from '@/assets/svg/play.svg';
@@ -16,7 +16,7 @@ import { type AudioWaveOptions, type Duration } from './type';
 
 interface AudioWaveProps {
   className?: string;
-  audioFile?: File;
+  audioFile?: File | Blob;
   options?: AudioWaveOptions;
 }
 
@@ -43,6 +43,10 @@ const AudioWave = ({ className, audioFile }: AudioWaveProps) => {
     audioBuffer,
     duration,
   });
+
+  useEffect(() => {
+    if (audioFile) load(audioFile);
+  }, [audioFile]);
 
   const updateDuration = (updatedDuration: Duration, pos: 'begin' | 'end') => {
     setDuration(updatedDuration);
@@ -89,7 +93,7 @@ const AudioWave = ({ className, audioFile }: AudioWaveProps) => {
           <div
             data-content={convertToTime(currentTime)}
             className={cn(
-              'bg-foreground-accent pointer-events-none absolute top-0 z-10 h-full w-[1px]',
+              'pointer-events-none absolute top-0 z-20 h-full w-[1px] bg-foreground',
               audioState !== 'stopped' && 'opacity-100',
               'before:text-foreground-accent before:absolute before:bottom-full before:left-1/2 before:mb-2 before:-translate-x-1/2 before:rounded-md before:bg-surface before:px-2 before:py-0.5 before:text-sm before:content-[attr(data-content)]',
             )}
@@ -106,7 +110,7 @@ const AudioWave = ({ className, audioFile }: AudioWaveProps) => {
               'before:absolute before:bottom-full before:left-1/2 before:mb-2 before:-translate-x-1/2 before:rounded-md before:bg-surface before:px-2 before:py-0.5 before:text-sm before:text-foreground before:content-[attr(data-content)]',
             )}
             style={{
-              opacity: isHover ? 1 : 0,
+              opacity: isHover ? 0.7 : 0,
               left: `${(hoverTime / duration.full) * 100}%`,
             }}
           />

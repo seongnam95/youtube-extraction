@@ -6,7 +6,7 @@ import { type VariantProps, cva } from 'class-variance-authority';
 import { cn } from '@/lib/cn';
 
 const iconButtonVariants = cva(
-  `inline-flex items-center border justify-center font-medium transition-colors 
+  `inline-flex flex-shrink-0 items-center border justify-center font-medium transition-colors 
   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring 
   disabled:pointer-events-none disabled:opacity-60`,
   {
@@ -20,9 +20,9 @@ const iconButtonVariants = cva(
       variant: {
         default: 'border-transparent bg-primary text-primary-foreground hover:bg-primary-accent',
         secondary: 'bg-surface text-foreground border-transparent hover:border-border',
-        outline: 'border-border-accent hover:border-secondary-accent',
+        outline: 'border-border hover:border-border-accent',
         dashed: 'border-border-accent border-dashed hover:border-secondary-accent',
-        ghost: 'border-transparent hover:bg-surface',
+        ghost: 'border-transparent hover:bg-surface-accent',
       },
       circle: {
         true: 'rounded-full',

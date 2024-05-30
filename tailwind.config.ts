@@ -17,12 +17,15 @@ const config: Config = {
       currentColor: 'currentColor',
       white: '#fff',
       black: '#121212',
-      surface: 'var(--surface)',
       ring: 'var(--ring)',
       background: 'var(--background)',
       foreground: {
         DEFAULT: 'var(--foreground)',
         muted: 'var(--foreground-muted)',
+      },
+      surface: {
+        DEFAULT: 'var(--surface)',
+        accent: 'var(--surface-accent)',
       },
       primary: {
         DEFAULT: 'var(--primary)',
