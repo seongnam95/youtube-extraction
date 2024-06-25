@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 
-import PauseIcon from '@/assets/svg/pause.svg';
-import PlayIcon from '@/assets/svg/play.svg';
+import { PauseIcon, PlayIcon } from '@radix-ui/react-icons';
+
 import { convertToTime } from '@/components/AudioWave/calculation';
 import { useAudioPlayer } from '@/components/AudioWave/hooks/useAudioPlayer';
 import { Flex } from '@/components/ui/Flex';

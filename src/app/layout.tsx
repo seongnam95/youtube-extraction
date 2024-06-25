@@ -13,21 +13,21 @@ import '@/styles/globals.css';
 const inter = Noto_Sans_KR({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Youtube Audio Extract - 유튜브 음원 추출 및 오디오 편집',
+  title: 'Audio Extract - 유튜브 음원 추출 및 오디오 편집',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AudioDataProvider>
-          <main id="root" className="flex h-screen w-screen flex-col">
-            <Header />
+        <main id="root" className="w-dvh flex h-dvh flex-col">
+          <Header />
+          <AudioDataProvider>
             <Content className="flex-grow">{children}</Content>
-            <Footer />
-            <Toaster />
-          </main>
-        </AudioDataProvider>
+          </AudioDataProvider>
+          <Footer />
+          <Toaster />
+        </main>
       </body>
     </html>
   );

@@ -2,8 +2,8 @@
 
 import React, { useEffect, useRef } from 'react';
 
-import PauseIcon from '@/assets/svg/pause.svg';
-import PlayIcon from '@/assets/svg/play.svg';
+import { PauseIcon, PlayIcon } from '@radix-ui/react-icons';
+
 import { Flex } from '@/components/ui/Flex';
 import { IconButton } from '@/components/ui/IconButton';
 import { cn } from '@/lib/cn';

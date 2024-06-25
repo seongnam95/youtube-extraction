@@ -4,21 +4,23 @@ import { ReactNode, createContext, useContext, useState } from 'react';
 
 import { AudioExtractData } from '@/types/audio';
 
-interface AudioContextType {
+interface AudioDataContextType {
   audioData: AudioExtractData | null;
   setAudioData: (data: AudioExtractData | null) => void;
 }
 
-const AudioContext = createContext<AudioContextType | undefined>(undefined);
+const AudioDataContext = createContext<AudioDataContextType | undefined>(undefined);
 
 export const AudioDataProvider = ({ children }: { children: ReactNode }) => {
   const [audioData, setAudioData] = useState<AudioExtractData | null>(null);
 
-  return <AudioContext.Provider value={{ audioData, setAudioData }}>{children}</AudioContext.Provider>;
+  return (
+    <AudioDataContext.Provider value={{ audioData, setAudioData }}>{children}</AudioDataContext.Provider>
+  );
 };
 
 export const useAudioData = () => {
-  const context = useContext(AudioContext);
+  const context = useContext(AudioDataContext);
   if (!context) {
     throw new Error('useAudio must be used within an AudioProvider');
   }

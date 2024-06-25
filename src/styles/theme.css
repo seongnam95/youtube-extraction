@@ -20,4 +20,9 @@
 
   --region-bar: #b199fef3;
   --region-surface: #d6e2f916;
+
+  --info: #3a9df8;
+  --success: #2fca80;
+  --error: #f0555a;
+  --warning: #ffc107;
 }

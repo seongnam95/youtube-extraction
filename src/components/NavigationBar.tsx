@@ -3,12 +3,10 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { useAudioData } from '@/context/AudioDataContext';
 import { cn } from '@/lib/cn';
 
 const NavigationBar = () => {
   const pathname = usePathname();
-  const { setAudioData } = useAudioData();
 
   const menuItems = [
     {
@@ -31,7 +29,6 @@ const NavigationBar = () => {
           active={pathname.startsWith(item.path)}
           title={item.title}
           path={item.path}
-          onClick={() => setAudioData(null)}
         />
       ))}
     </nav>

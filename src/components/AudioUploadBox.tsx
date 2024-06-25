@@ -2,7 +2,8 @@
 
 import React, { DragEvent, useCallback, useState } from 'react';
 
-import UploadIcon from '@/assets/svg/upload.svg';
+import { UploadIcon } from '@radix-ui/react-icons';
+
 import { cn } from '@/lib/cn';
 
 interface AudioUploadBoxProps {
@@ -61,9 +62,9 @@ const AudioUploadBox = ({ className, onUpload }: AudioUploadBoxProps) => {
       onDrop={handleDrop}
     >
       <input className="hidden" type="file" accept="audio/*" onChange={handleUpload} />
-      <div className="flex flex-col items-center justify-center gap-1">
-        <UploadIcon className="size-10 fill-foreground" />
-        <p>파일 선택</p>
+      <div className="flex flex-col items-center justify-center gap-2">
+        <UploadIcon className="size-8 fill-foreground" />
+        파일 선택
       </div>
     </label>
   );

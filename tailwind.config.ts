@@ -17,6 +17,10 @@ const config: Config = {
       currentColor: 'currentColor',
       white: '#fff',
       black: '#121212',
+      info: 'var(--info)',
+      success: 'var(--success)',
+      warning: 'var(--warning)',
+      error: 'var(--error)',
       ring: 'var(--ring)',
       background: 'var(--background)',
       foreground: {

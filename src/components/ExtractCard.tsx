@@ -1,7 +1,7 @@
 import React from 'react';
 
-import AudioWaveIcon from '@/assets/svg/audio-wave.svg';
-import DownloadIcon from '@/assets/svg/download.svg';
+import { DownloadIcon, MixerHorizontalIcon } from '@radix-ui/react-icons';
+
 import YoutubeIcon from '@/assets/svg/youtube.svg';
 import Audio from '@/components/Audio';
 import { Button } from '@/components/ui/Button';
@@ -36,13 +36,13 @@ const ExtractCard = ({ className, onEdit, onDownload }: ExtractCardProps) => {
         {/* 편집 버튼 */}
         <Tooltip content="오디오 편집" asChild>
           <IconButton size="lg" variant="outline" aria-label="편집" onClick={onEdit}>
-            <AudioWaveIcon className="size-5 fill-foreground" />
+            <MixerHorizontalIcon />
           </IconButton>
         </Tooltip>
 
         {/* 다운로드 버튼 */}
         <Button onClick={onDownload}>
-          <DownloadIcon className="mr-2 size-5 fill-primary-foreground" />
+          <DownloadIcon className="mr-2 size-4 fill-primary-foreground" />
           다운로드
         </Button>
       </Flex>

@@ -4,9 +4,11 @@ import { useState } from 'react';
 
 import ExtractCard from '@/components/ExtractCard';
 import SearchField from '@/components/SearchField';
+import { Heading } from '@/components/ui/Heading';
 import { useToast } from '@/components/ui/Toast/use-toast';
 import { useAudioData } from '@/context/AudioDataContext';
 import base64ToBlob from '@/lib/b64toBlob';
+import { audioExtraction } from '@/service/audio-extraction';
 
 const ExtractPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -29,44 +31,27 @@ const ExtractPage = () => {
     element.remove();
   };
 
-  const handleSubmit = (url: string) => audioExtraction(url);
+  const handleSubmit = (url: string) => {
+    setAudioData(null);
+    setIsLoading(true);
 
-  const audioExtraction = async (youtubeUrl: string) => {
-    try {
-      setAudioData(null);
-      setIsLoading(true);
-      const response = await fetch(`/api/audio?link=${encodeURIComponent(youtubeUrl)}`);
-
-      if (response.ok) {
-        const data = await response.json();
-        const decodedAudio = base64ToBlob(data.base64Audio);
-
-        setAudioData({
-          title: data.title,
-          blob: decodedAudio,
-        });
-      } else {
-        const errorData = await response.json();
-        console.error('오디오 추출 실패:', errorData);
-
+    audioExtraction(url)
+      .then(setAudioData)
+      .catch((error) => {
+        const errMsg = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
         toast({
-          description: '서버에 오류가 발생했습니다.',
-          duration: 2000,
+          variant: 'error',
+          description: errMsg,
         });
-      }
-    } catch (error) {
-      console.error('오류 발생:', error);
-      toast({
-        description: '오디오 추출에 실패했습니다.',
-        duration: 2000,
-      });
-    } finally {
-      setIsLoading(false);
-    }
+      })
+      .finally(() => setIsLoading(false));
   };
 
   return (
     <div className="flex flex-col justify-center">
+      <Heading className="mb-10" level="1" align="center">
+        Audio Extractor
+      </Heading>
       <SearchField className="mt-4" onSubmit={handleSubmit} loading={isLoading} />
       <ExtractCard className="mt-5" onDownload={handleDownload} />
     </div>
