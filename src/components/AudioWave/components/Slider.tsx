@@ -9,9 +9,10 @@ interface SliderProps {
   containerRef: RefObject<HTMLElement>;
   duration: Duration;
   onChange?: (duration: Duration, handle: 'begin' | 'end') => void;
+  onHandleBlur?: (duration: Duration, handle: 'begin' | 'end') => void;
 }
 
-const Slider = ({ containerRef, duration, onChange }: SliderProps) => {
+const Slider = ({ containerRef, duration, onChange, onHandleBlur }: SliderProps) => {
   const handleMouseDown = useCallback(
     (handle: 'begin' | 'end') => (downEvent: React.MouseEvent) => {
       if (!containerRef.current) return;
@@ -48,14 +49,19 @@ const Slider = ({ containerRef, duration, onChange }: SliderProps) => {
         });
       };
 
+      const handleMouseUp = () => {
+        onHandleBlur?.(duration, handle);
+        cleanup();
+      };
+
       const cleanup = () => {
         document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', cleanup);
+        document.removeEventListener('mouseup', handleMouseUp);
         cancelAnimationFrame(frameId);
       };
 
       document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', cleanup);
+      document.addEventListener('mouseup', handleMouseUp);
     },
     [duration, onChange],
   );

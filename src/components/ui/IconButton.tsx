@@ -20,7 +20,7 @@ const iconButtonVariants = cva(
       variant: {
         default: 'border-transparent bg-primary text-primary-foreground hover:bg-primary-accent',
         secondary: 'bg-surface text-foreground border-transparent hover:border-border',
-        outline: 'border-border hover:border-border-accent',
+        outline: 'border-border hover:border-border-accent hover:bg-surface-accent',
         dashed: 'border-border-accent border-dashed hover:border-secondary-accent',
         ghost: 'border-transparent hover:bg-surface-accent',
       },

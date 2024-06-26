@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import '@radix-ui/react-icons';
 
@@ -16,7 +16,7 @@ interface SearchFieldProps {
 }
 
 const SearchField = ({ className, loading, onSubmit }: SearchFieldProps) => {
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [inputValue, setInputValue] = useState<string>('');
   const { toast } = useToast();
 

@@ -18,7 +18,7 @@ const buttonVariants = cva(
       variant: {
         default: `border-transparent bg-primary text-primary-foreground hover:bg-primary-accent`,
         secondary: `bg-surface-accent text-foreground border-transparent`,
-        outline: `border-border-accent hover:border-border-accent`,
+        outline: `border-border-accent hover:border-border-accent hover:bg-surface-accent`,
         dashed: `border-border-accent border-dashed hover:border-border-accent`,
         ghost: `border-transparent hover:bg-surface`,
         link: `text-primary border-transparent underline-offset-4 underline hover:bg-primary-surface`,

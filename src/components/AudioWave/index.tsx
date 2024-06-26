@@ -18,9 +18,11 @@ interface AudioWaveProps {
   className?: string;
   audioFile?: File | Blob;
   options?: AudioWaveOptions;
+  onChangeDuration?: (duration: Duration) => void;
+  onHandleBlur?: (duration: Duration, handle: 'begin' | 'end') => void;
 }
 
-const AudioWave = ({ className, audioFile }: AudioWaveProps) => {
+const AudioWave = ({ className, audioFile, onChangeDuration, onHandleBlur }: AudioWaveProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -56,6 +58,8 @@ const AudioWave = ({ className, audioFile }: AudioWaveProps) => {
       if (updatedDuration.end - 3 > updatedDuration.begin) setStartedAt(updatedDuration.end - 3);
       else setStartedAt(updatedDuration.begin);
     }
+
+    onChangeDuration?.(updatedDuration);
   };
 
   const handleClick = (e: React.MouseEvent<HTMLElement>) => {
@@ -87,7 +91,12 @@ const AudioWave = ({ className, audioFile }: AudioWaveProps) => {
           <canvas ref={canvasRef} />
 
           {/* Slider */}
-          <Slider containerRef={containerRef} duration={duration} onChange={updateDuration} />
+          <Slider
+            containerRef={containerRef}
+            duration={duration}
+            onChange={updateDuration}
+            onHandleBlur={onHandleBlur}
+          />
 
           {/* Progress Line */}
           <div

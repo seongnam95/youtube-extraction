@@ -8,19 +8,17 @@ import { Button } from '@/components/ui/Button';
 import { Flex } from '@/components/ui/Flex';
 import { IconButton } from '@/components/ui/IconButton';
 import { Tooltip } from '@/components/ui/Tooltip';
-import { useAudioData } from '@/context/AudioDataContext';
 import { cn } from '@/lib/cn';
+import { AudioExtractData } from '@/types/audio';
 
 interface ExtractCardProps {
+  audioData: AudioExtractData;
   className?: string;
   onEdit?: () => void;
   onDownload?: () => void;
 }
 
-const ExtractCard = ({ className, onEdit, onDownload }: ExtractCardProps) => {
-  const { audioData } = useAudioData();
-
-  if (!audioData) return null;
+const ExtractCard = ({ audioData, className, onEdit, onDownload }: ExtractCardProps) => {
   return (
     <div className={cn('w-full rounded-md bg-surface px-5 py-6', className)}>
       {/* 오디오 제목 */}

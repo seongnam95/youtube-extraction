@@ -1,7 +1,12 @@
 import base64ToBlob from '@/lib/b64toBlob';
 import { AudioExtractData } from '@/types/audio';
 
-export const audioExtraction = async (youtubeUrl: string): Promise<AudioExtractData | null> => {
+/**
+ * 유튜브 오디오 추출 API 호출
+ * @param youtubeUrl 유튜브 링크
+ * @returns Promise<AudioExtractData | null>
+ */
+export const audioExtraction = async (youtubeUrl: string): Promise<AudioExtractData> => {
   try {
     const response = await fetch(`/api/audio?link=${encodeURIComponent(youtubeUrl)}`);
 
